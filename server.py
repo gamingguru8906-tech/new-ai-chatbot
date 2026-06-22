@@ -55,6 +55,7 @@ ONE_QUESTION_URL = os.getenv(
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLACE_SEARCH_CACHE = {}
 PLACE_SEARCH_LAST_CALL = 0.0
+PLACE_TIMEZONE_FINDER = None
 PLACE_SEARCH_USER_AGENT = os.getenv(
     "PLACE_SEARCH_USER_AGENT",
     "VeshannastroAI/1.0 (https://veshannastro.co.in)",
@@ -165,12 +166,141 @@ def _cta_buttons():
     ]
 
 
+def _place_timezone(lat: float, lon: float) -> str:
+    global PLACE_TIMEZONE_FINDER
+    try:
+        from timezonefinder import TimezoneFinder
+
+        if PLACE_TIMEZONE_FINDER is None:
+            PLACE_TIMEZONE_FINDER = TimezoneFinder()
+        return PLACE_TIMEZONE_FINDER.timezone_at(lat=lat, lng=lon) or "UTC"
+    except Exception:
+        return "UTC"
+
+
+def _place_label(*parts) -> str:
+    seen = set()
+    clean = []
+    for part in parts:
+        value = " ".join(str(part or "").strip().split())
+        if not value:
+            continue
+        key = value.lower()
+        if key not in seen:
+            clean.append(value)
+            seen.add(key)
+    return ", ".join(clean)
+
+
+def _dedupe_places(results: list[dict]) -> list[dict]:
+    unique = []
+    seen = set()
+    for item in results:
+        key = (round(float(item["lat"]), 4), round(float(item["lon"]), 4), item["label"].lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(item)
+    return unique[:10]
+
+
+def _nominatim_places(query: str) -> list[dict]:
+    params = urllib.parse.urlencode(
+        {
+            "format": "jsonv2",
+            "q": query,
+            "limit": 10,
+            "addressdetails": 1,
+            "accept-language": "en",
+        }
+    )
+    request = urllib.request.Request(
+        f"https://nominatim.openstreetmap.org/search?{params}",
+        headers={"User-Agent": PLACE_SEARCH_USER_AGENT, "Referer": "https://veshannastro.co.in"},
+        method="GET",
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        raw = json.loads(response.read().decode("utf-8"))
+
+    results = []
+    for item in raw:
+        try:
+            lat = float(item["lat"])
+            lon = float(item["lon"])
+        except Exception:
+            continue
+        address = item.get("address") or {}
+        primary = (
+            address.get("city")
+            or address.get("town")
+            or address.get("village")
+            or address.get("municipality")
+            or address.get("county")
+            or item.get("name")
+            or query
+        )
+        label = item.get("display_name") or _place_label(primary, address.get("state"), address.get("country"))
+        results.append(
+            {
+                "name": primary,
+                "label": label,
+                "state": address.get("state") or "",
+                "country": address.get("country") or "",
+                "lat": lat,
+                "lon": lon,
+                "tz": _place_timezone(lat, lon),
+                "source": "openstreetmap",
+            }
+        )
+    return _dedupe_places(results)
+
+
+def _photon_places(query: str) -> list[dict]:
+    params = urllib.parse.urlencode({"q": query, "limit": 10, "lang": "en"})
+    request = urllib.request.Request(
+        f"https://photon.komoot.io/api/?{params}",
+        headers={"User-Agent": PLACE_SEARCH_USER_AGENT, "Referer": "https://veshannastro.co.in"},
+        method="GET",
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        raw = json.loads(response.read().decode("utf-8"))
+
+    results = []
+    for feature in raw.get("features", []):
+        props = feature.get("properties") or {}
+        coords = (feature.get("geometry") or {}).get("coordinates") or []
+        if len(coords) < 2:
+            continue
+        try:
+            lon = float(coords[0])
+            lat = float(coords[1])
+        except Exception:
+            continue
+        primary = props.get("city") or props.get("name") or props.get("county") or query
+        state = props.get("state") or ""
+        country = props.get("country") or ""
+        label = _place_label(props.get("name"), props.get("city"), state, country) or query
+        results.append(
+            {
+                "name": primary,
+                "label": label,
+                "state": state,
+                "country": country,
+                "lat": lat,
+                "lon": lon,
+                "tz": _place_timezone(lat, lon),
+                "source": "photon",
+            }
+        )
+    return _dedupe_places(results)
+
+
 @app.get("/api/places")
 def places(q: str = ""):
-    """User-triggered global place search using OSM Nominatim.
+    """User-triggered global place search using free providers.
 
-    This is not live autocomplete. Results are cached and throttled because the
-    public Nominatim service is free but fair-use only.
+    Nominatim is tried first; Photon is a backup so the UI does not die when
+    one free endpoint is slow or temporarily blocked.
     """
     global PLACE_SEARCH_LAST_CALL
     query = " ".join((q or "").strip().split())
@@ -183,76 +313,30 @@ def places(q: str = ""):
         return cached
 
     elapsed = time.monotonic() - PLACE_SEARCH_LAST_CALL
-    if elapsed < 1.05:
-        time.sleep(1.05 - elapsed)
+    if elapsed < 0.45:
+        time.sleep(0.45 - elapsed)
     PLACE_SEARCH_LAST_CALL = time.monotonic()
 
-    params = urllib.parse.urlencode(
-        {
-            "format": "jsonv2",
-            "q": query,
-            "limit": 8,
-            "addressdetails": 1,
-            "accept-language": "en",
-        }
-    )
-    request = urllib.request.Request(
-        f"https://nominatim.openstreetmap.org/search?{params}",
-        headers={"User-Agent": PLACE_SEARCH_USER_AGENT, "Referer": "https://veshannastro.co.in"},
-        method="GET",
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=12) as response:
-            raw = json.loads(response.read().decode("utf-8"))
-    except Exception as exc:
-        raise HTTPException(502, f"Place search failed: {exc}")
-
-    results = []
-    for item in raw:
+    errors = []
+    places_result = []
+    provider = ""
+    for provider_name, searcher in (("openstreetmap", _nominatim_places), ("photon", _photon_places)):
         try:
-            lat = float(item["lat"])
-            lon = float(item["lon"])
-        except Exception:
-            continue
-        tz = None
-        try:
-            from timezonefinder import TimezoneFinder
+            places_result = searcher(query)
+            provider = provider_name
+            if places_result:
+                break
+        except Exception as exc:
+            errors.append(f"{provider_name}: {exc}")
 
-            tz = TimezoneFinder().timezone_at(lat=lat, lng=lon)
-        except Exception:
-            pass
-        address = item.get("address") or {}
-        primary = (
-            address.get("city")
-            or address.get("town")
-            or address.get("village")
-            or address.get("municipality")
-            or address.get("county")
-            or item.get("name")
-            or query
-        )
-        secondary = ", ".join(
-            part
-            for part in [
-                address.get("state"),
-                address.get("country"),
-            ]
-            if part
-        )
-        label = item.get("display_name") or ", ".join(part for part in [primary, secondary] if part)
-        results.append(
-            {
-                "name": primary,
-                "label": label,
-                "state": address.get("state") or "",
-                "country": address.get("country") or "",
-                "lat": lat,
-                "lon": lon,
-                "tz": tz or "UTC",
-            }
-        )
-
-    payload = {"ok": True, "places": results, "attribution": "OpenStreetMap contributors"}
+    payload = {
+        "ok": True,
+        "places": places_result,
+        "provider": provider,
+        "attribution": "OpenStreetMap contributors, Photon/Komoot",
+    }
+    if errors and not places_result:
+        payload["warning"] = "Place search is slow right now. Try city plus country, or try again."
     PLACE_SEARCH_CACHE[key] = payload
     return payload
 

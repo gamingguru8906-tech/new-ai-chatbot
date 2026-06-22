@@ -44,6 +44,8 @@
     chartData: null,
     sending: false
   };
+  var placeSearchTimers = {};
+  var placeSearchTokens = {};
 
   var astroSteps = [
     { key: "name", label: "Name", title: "What should Maya call you?", type: "text", placeholder: "Enter your full name" },
@@ -189,14 +191,15 @@
     for (var i = 0; i < CITY_DATA.length; i += 1) {
       var c = CITY_DATA[i];
       var name = c.name.toLowerCase();
+      var label = [c.name, c.state, c.country].join(" ").toLowerCase();
       if (name.indexOf(q) === 0) starts.push(c);
-      else if (name.indexOf(q) !== -1) contains.push(c);
+      else if (label.indexOf(q) !== -1) contains.push(c);
     }
     return starts.concat(contains).slice(0, 7);
   }
 
   function cityDisplayLabel(c) {
-    return c.name + ", " + c.state + ", " + c.country;
+    return [c.name, c.state, c.country].filter(Boolean).join(", ");
   }
 
   function renderCitySuggestions(query, opts) {
@@ -238,7 +241,16 @@
         input.focus();
       });
     }
-    if (status) status.innerHTML = "";
+    if (status && !opts.keepStatus) status.innerHTML = "";
+  }
+
+  function schedulePlaceSearch(query, opts, timerKey) {
+    var q = String(query || "").trim();
+    clearTimeout(placeSearchTimers[timerKey]);
+    if (q.length < 3) return;
+    placeSearchTimers[timerKey] = setTimeout(function () {
+      searchGlobalPlaces(q, opts);
+    }, 650);
   }
 
   async function searchGlobalPlaces(query, opts) {
@@ -247,29 +259,47 @@
     var listId = opts.listId || "mayaAstroCityList";
     var statusId = opts.statusId || "mayaAstroCityStatus";
     var inputId = opts.inputId || "mayaAstroInput";
+    var tokenKey = opts.tokenKey || listId;
     var list = document.getElementById(listId);
     var status = document.getElementById(statusId);
     var q = String(query || "").trim();
+    var token = String(Date.now()) + Math.random();
+    placeSearchTokens[tokenKey] = token;
     if (!list || q.length < 3) {
-      if (status) status.innerHTML = '<div class="maya-city-unconfirmed">Type at least 3 letters, then search your place.</div>';
+      if (status) status.innerHTML = '<div class="maya-city-unconfirmed">Type at least 3 letters to search your place.</div>';
       return;
     }
+    var localMatches = searchCities(q);
+    if (localMatches.length) {
+      var localOpts = {};
+      Object.keys(opts).forEach(function (key) { localOpts[key] = opts[key]; });
+      localOpts.keepStatus = true;
+      renderCitySuggestions(q, localOpts);
+    } else {
+      list.innerHTML = "";
+      list.classList.remove("is-open");
+    }
     if (status) status.innerHTML = '<div class="maya-city-confirmed">Searching worldwide places...</div>';
-    list.innerHTML = "";
-    list.classList.remove("is-open");
     try {
       var data = await getJson("/api/places?q=" + encodeURIComponent(q));
+      if (placeSearchTokens[tokenKey] !== token) return;
       var places = data.places || [];
       if (!places.length) {
-        if (status) status.innerHTML = '<div class="maya-city-unconfirmed">No place found. Try city + state/country, for example "Bhopal India" or "Paris France".</div>';
+        if (localMatches.length) {
+          if (status) status.innerHTML = '<div class="maya-city-confirmed">Select one of the shown matches, or type city + country for a wider search.</div>';
+        } else if (status) {
+          status.innerHTML = '<div class="maya-city-unconfirmed">No place found. Try city + state/country, for example "Bhopal India" or "Paris France".</div>';
+        }
         return;
       }
       list.innerHTML = places.map(function (place, idx) {
-        return '<button type="button" class="maya-city-option" data-place-index="' + idx + '"><strong>' + escapeHtml(place.name || place.label) + '</strong><small>' + escapeHtml(place.label || "") + '</small></button>';
+        var source = place.source ? " · " + place.source : "";
+        return '<button type="button" class="maya-city-option" data-place-index="' + idx + '"><strong>' + escapeHtml(place.name || place.label) + '</strong><small>' + escapeHtml((place.label || "") + source) + '</small></button>';
       }).join("");
       list.classList.add("is-open");
-      list.querySelectorAll("[data-place-index]").forEach(function (button) {
-        button.addEventListener("click", function (event) {
+      var options = list.querySelectorAll("[data-place-index]");
+      for (var i = 0; i < options.length; i += 1) {
+        options[i].addEventListener("click", function (event) {
           var idx = Number(event.currentTarget.getAttribute("data-place-index"));
           var place = places[idx];
           var input = document.getElementById(inputId);
@@ -280,12 +310,18 @@
           target.birth_lon = place.lon;
           target.birth_tz = place.tz || "UTC";
           list.classList.remove("is-open");
-          if (status) status.innerHTML = '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div><div class="maya-field-hint">Place data by OpenStreetMap contributors.</div>';
+          if (status) status.innerHTML = '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div>';
           input.focus();
         });
-      });
+      }
+      if (status) status.innerHTML = '<div class="maya-city-confirmed">Select your exact birth place from the list.</div>';
     } catch (error) {
-      if (status) status.innerHTML = '<div class="maya-city-unconfirmed">Place search is not available right now. Please try again in a moment.</div>';
+      if (placeSearchTokens[tokenKey] !== token) return;
+      if (localMatches.length) {
+        if (status) status.innerHTML = '<div class="maya-city-confirmed">Showing saved matches. For a smaller town, add state and country, then search again.</div>';
+      } else if (status) {
+        status.innerHTML = '<div class="maya-city-unconfirmed">Place search is slow right now. Add state/country and try again.</div>';
+      }
     }
   }
 
@@ -695,17 +731,17 @@
       var hasCoords = state.astroData.birth_lat !== null && state.astroData.birth_lon !== null && state.astroData.birth_city === fieldValue;
       var statusHtml = hasCoords
         ? '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div>'
-        : (fieldValue ? '<div class="maya-city-unconfirmed">Tap search and select the correct place for exact coordinates.</div>' : '');
+        : (fieldValue ? '<div class="maya-city-unconfirmed">Searching places... select your exact match.</div>' : '');
       fieldHtml = [
         '<div class="maya-field"><label>Birth city</label>',
         '<div class="maya-city-wrap">',
         '<div class="maya-field-wrap">',
         '<input id="mayaAstroInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="City, state, country">',
-        '<button class="maya-icon-button" type="button" id="mayaAstroPlaceSearch" aria-label="Search place">⌕</button>',
+        '<button class="maya-icon-button" type="button" id="mayaAstroPlaceSearch" aria-label="Search place">&#128269;</button>',
         '</div>',
         '<div class="maya-city-list" id="mayaAstroCityList"></div>',
         '</div>',
-        '<div class="maya-field-hint">Type your place, then tap search. Uses worldwide OpenStreetMap place search.</div>',
+        '<div class="maya-field-hint">Type city, state, country. Select the exact place from the list.</div>',
         '<div id="mayaAstroCityStatus">' + statusHtml + '</div>',
         '</div>'
       ].join("");
@@ -714,7 +750,7 @@
         '<div class="maya-field"><label>Date of birth</label>',
         '<div class="maya-field-wrap">',
         '<input id="mayaAstroInput" type="text" inputmode="numeric" value="' + escapeHtml(fieldValue) + '" placeholder="DD/MM/YYYY">',
-        '<button class="maya-icon-button" type="button" id="mayaAstroDateButton" aria-label="Open date picker">▦</button>',
+        '<button class="maya-icon-button" type="button" id="mayaAstroDateButton" aria-label="Open date picker">&#9638;</button>',
         '<input class="maya-hidden-picker" id="mayaAstroNativeDate" type="date" tabindex="-1">',
         '</div><div class="maya-field-hint">Use Indian format: DD/MM/YYYY</div></div>'
       ].join("");
@@ -723,7 +759,7 @@
         '<div class="maya-field"><label>Birth time</label>',
         '<div class="maya-field-wrap">',
         '<input id="mayaAstroInput" type="text" inputmode="numeric" value="' + escapeHtml(fieldValue) + '" placeholder="HH:MM or 07:30 PM">',
-        '<button class="maya-icon-button" type="button" id="mayaAstroTimeButton" aria-label="Open time picker">\u25F7</button>',
+        '<button class="maya-icon-button" type="button" id="mayaAstroTimeButton" aria-label="Open time picker">&#9719;</button>',
         '<input class="maya-hidden-picker" id="mayaAstroNativeTime" type="time" tabindex="-1">',
         '</div><div class="maya-field-hint">Use the clock icon, or type time manually. Unknown time is also okay.</div></div>'
       ].join("");
@@ -762,8 +798,15 @@
           list.classList.remove("is-open");
         }
         if (status) status.innerHTML = input.value.trim().length >= 3
-          ? '<div class="maya-city-unconfirmed">Tap search and select your exact place.</div>'
+          ? '<div class="maya-city-unconfirmed">Searching places... select your exact match.</div>'
           : '';
+        schedulePlaceSearch(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput", tokenKey: "astroPlace" }, "astroPlace");
+      }
+    });
+    input.addEventListener("keydown", function (event) {
+      if (step.key === "birth_city" && event.key === "Enter") {
+        event.preventDefault();
+        searchGlobalPlaces(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput", tokenKey: "astroPlace" });
       }
     });
 
@@ -794,7 +837,7 @@
     if (step.key === "birth_city") {
       var placeSearch = document.getElementById("mayaAstroPlaceSearch");
       if (placeSearch) placeSearch.addEventListener("click", function () {
-        searchGlobalPlaces(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput" });
+        searchGlobalPlaces(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput", tokenKey: "astroPlace" });
       });
       document.addEventListener("click", function closeAstroCityList(event) {
         var list = document.getElementById("mayaAstroCityList");
@@ -823,7 +866,7 @@
       if (step.key === "birth_city" && (state.astroData.birth_lat === null || state.astroData.birth_lon === null)) {
         var cityError = document.getElementById("mayaAstroFieldError");
         if (cityError) {
-          cityError.textContent = "Please tap search and select your exact birth place from the list.";
+          cityError.textContent = "Please select your exact birth place from the list.";
           cityError.classList.add("is-visible");
         }
         input.focus();
@@ -1002,7 +1045,7 @@
         '<div class="maya-field"><label>Date of birth</label>',
         '<div class="maya-field-wrap">',
         '<input id="mayaGemInput" type="text" inputmode="numeric" value="' + escapeHtml(fieldValue) + '" placeholder="DD/MM/YYYY">',
-        '<button class="maya-icon-button" type="button" id="mayaDateButton" aria-label="Open date picker">▦</button>',
+        '<button class="maya-icon-button" type="button" id="mayaDateButton" aria-label="Open date picker">&#9638;</button>',
         '<input class="maya-hidden-picker" id="mayaNativeDate" type="date" tabindex="-1">',
         '</div><div class="maya-field-hint">Use Indian format: DD/MM/YYYY</div></div>'
       ].join("");
@@ -1012,7 +1055,7 @@
         '<div class="maya-field"><label>Birth time</label>',
         '<div class="maya-field-wrap">',
         '<input id="mayaGemInput" type="text" inputmode="numeric" value="' + escapeHtml(fieldValue) + '" placeholder="HH:MM or 07:30 PM">',
-        '<button class="maya-icon-button" type="button" id="mayaTimeButton" aria-label="Open time picker">◷</button>',
+        '<button class="maya-icon-button" type="button" id="mayaTimeButton" aria-label="Open time picker">&#9719;</button>',
         '<input class="maya-hidden-picker" id="mayaNativeTime" type="time" tabindex="-1">',
         '</div><div class="maya-field-hint">Use the clock icon, or type time manually. Unknown time is also okay.</div></div>'
       ].join("");
@@ -1021,17 +1064,17 @@
       var hasCoords = state.gemData.birth_lat !== null && state.gemData.birth_lon !== null && state.gemData.birth_city === fieldValue;
       var statusHtml = hasCoords
         ? '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div>'
-        : (fieldValue ? '<div class="maya-city-unconfirmed">Tap search and select the correct place for exact coordinates.</div>' : '');
+        : (fieldValue ? '<div class="maya-city-unconfirmed">Searching places... select your exact match.</div>' : '');
       fieldHtml = [
         '<div class="maya-field"><label>Birth city</label>',
         '<div class="maya-city-wrap">',
         '<div class="maya-field-wrap">',
         '<input id="mayaGemInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="City, state, country">',
-        '<button class="maya-icon-button" type="button" id="mayaGemPlaceSearch" aria-label="Search place">⌕</button>',
+        '<button class="maya-icon-button" type="button" id="mayaGemPlaceSearch" aria-label="Search place">&#128269;</button>',
         '</div>',
         '<div class="maya-city-list" id="mayaCityList"></div>',
         '</div>',
-        '<div class="maya-field-hint">Type your place, then tap search. Uses worldwide OpenStreetMap place search.</div>',
+        '<div class="maya-field-hint">Type city, state, country. Select the exact place from the list.</div>',
         '<div id="mayaCityStatus">' + statusHtml + '</div>',
         '</div>'
       ].join("");
@@ -1068,8 +1111,15 @@
           list.classList.remove("is-open");
         }
         if (status) status.innerHTML = input.value.trim().length >= 3
-          ? '<div class="maya-city-unconfirmed">Tap search and select your exact place.</div>'
+          ? '<div class="maya-city-unconfirmed">Searching places... select your exact match.</div>'
           : '';
+        schedulePlaceSearch(input.value, { target: state.gemData, listId: "mayaCityList", statusId: "mayaCityStatus", inputId: "mayaGemInput", tokenKey: "gemPlace" }, "gemPlace");
+      }
+    });
+    input.addEventListener("keydown", function (event) {
+      if (step.key === "birth_city" && event.key === "Enter") {
+        event.preventDefault();
+        searchGlobalPlaces(input.value, { target: state.gemData, listId: "mayaCityList", statusId: "mayaCityStatus", inputId: "mayaGemInput", tokenKey: "gemPlace" });
       }
     });
     var dateButton = document.getElementById("mayaDateButton");
@@ -1099,7 +1149,7 @@
     if (step.key === "birth_city") {
       var gemPlaceSearch = document.getElementById("mayaGemPlaceSearch");
       if (gemPlaceSearch) gemPlaceSearch.addEventListener("click", function () {
-        searchGlobalPlaces(input.value, { target: state.gemData, listId: "mayaCityList", statusId: "mayaCityStatus", inputId: "mayaGemInput" });
+        searchGlobalPlaces(input.value, { target: state.gemData, listId: "mayaCityList", statusId: "mayaCityStatus", inputId: "mayaGemInput", tokenKey: "gemPlace" });
       });
       document.addEventListener("click", function closeCityList(event) {
         var list = document.getElementById("mayaCityList");
@@ -1130,7 +1180,7 @@
       if (step.key === "birth_city" && (state.gemData.birth_lat === null || state.gemData.birth_lon === null)) {
         var cityError = document.getElementById("mayaFieldError");
         if (cityError) {
-          cityError.textContent = "Please tap search and select your exact birth place from the list.";
+          cityError.textContent = "Please select your exact birth place from the list.";
           cityError.classList.add("is-visible");
         }
         input.focus();
