@@ -28,6 +28,7 @@ import database as db
 
 load_dotenv()
 
+ASTRO_ENGINE_VERSION = getattr(astrology, "ENGINE_VERSION", "unknown")
 FREE_LIMIT = int(os.getenv("FREE_CREDITS", "300"))
 PRICE_PER_PACKAGE = int(os.getenv("PRICE_PER_PACKAGE_INR", "99"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "change-me")
@@ -51,6 +52,7 @@ ONE_QUESTION_URL = os.getenv(
     "ONE_QUESTION_URL",
     os.getenv("BOOKING_URL", "https://veshannastro.co.in"),
 )
+BRACELET_SHOP_URL = os.getenv("BRACELET_SHOP_URL", "https://veshannastro.co.in/")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLACE_SEARCH_CACHE = {}
@@ -163,16 +165,34 @@ def _locked_credit_reply(session_id: str):
     )
 
 
+BRACELET_CATALOG = {
+    "VA-BR-TP-001": {"name": "Triple Protection Bracelet", "mrp": 999, "price": 699, "discount": 30, "gemstones": "Tiger Eye + Black Obsidian + Hematite", "stock": "In Stock", "description": "A bold mixed-stone protection bracelet designed for daily wear and grounding.", "benefits": "Protection, grounding, confidence, negativity shielding", "tags": ["protection", "career", "strength", "grounding"]},
+    "VA-BR-AM-002": {"name": "Amethyst Bracelet", "mrp": 899, "price": 599, "discount": 33, "gemstones": "Amethyst", "stock": "In Stock", "description": "A calming purple crystal bracelet for peace, clarity, and spiritual balance.", "benefits": "Calm mind, stress relief, intuition, spiritual growth", "tags": ["peace", "intuition", "spirituality", "healing"]},
+    "VA-BR-CQ-003": {"name": "Clear Quartz Bracelet", "mrp": 799, "price": 549, "discount": 31, "gemstones": "Clear Quartz", "stock": "In Stock", "description": "A clean transparent crystal bracelet known as a universal energy amplifier.", "benefits": "Energy amplification, clarity, focus, cleansing", "tags": ["clarity", "focus", "healing", "energy"]},
+    "VA-BR-BT-004": {"name": "Black Tourmaline Bracelet", "mrp": 899, "price": 649, "discount": 28, "gemstones": "Black Tourmaline", "stock": "In Stock", "description": "A deep black protection bracelet for grounding and energetic shielding.", "benefits": "Protection, grounding, negativity removal, stability", "tags": ["protection", "grounding", "negativity", "stability"]},
+    "VA-BR-CT-005": {"name": "Citrine Bracelet", "mrp": 999, "price": 699, "discount": 30, "gemstones": "Citrine", "stock": "In Stock", "description": "A bright golden bracelet associated with abundance, confidence, and motivation.", "benefits": "Wealth, abundance, confidence, success mindset", "tags": ["wealth", "success", "confidence", "manifestation"]},
+    "VA-BR-YA-006": {"name": "Yellow Aventurine Bracelet", "mrp": 799, "price": 499, "discount": 38, "gemstones": "Yellow Aventurine", "stock": "In Stock", "description": "A warm yellow bracelet for optimism, personal power, and positive action.", "benefits": "Confidence, optimism, willpower, decision-making", "tags": ["confidence", "positivity", "career", "motivation"]},
+    "VA-BR-RJ-007": {"name": "Red Jasper Bracelet", "mrp": 799, "price": 499, "discount": 38, "gemstones": "Red Jasper", "stock": "In Stock", "description": "An earthy red bracelet for stamina, courage, and grounded strength.", "benefits": "Strength, stamina, courage, stability", "tags": ["health", "strength", "grounding", "courage"]},
+    "VA-BR-TE-008": {"name": "Tiger Eye Bracelet", "mrp": 899, "price": 599, "discount": 33, "gemstones": "Tiger Eye", "stock": "In Stock", "description": "A glossy golden-brown bracelet for confidence, focus, and practical success.", "benefits": "Confidence, focus, courage, protection", "tags": ["career", "success", "protection", "confidence"]},
+    "VA-BR-RQ-009": {"name": "Rose Quartz Bracelet", "mrp": 799, "price": 549, "discount": 31, "gemstones": "Rose Quartz", "stock": "In Stock", "description": "A soft pink bracelet for emotional healing, self-love, and harmony.", "benefits": "Love, emotional healing, self-love, relationship harmony", "tags": ["love", "relationships", "healing", "peace"]},
+    "VA-BR-GA-010": {"name": "Green Aventurine Bracelet", "mrp": 799, "price": 499, "discount": 38, "gemstones": "Green Aventurine", "stock": "In Stock", "description": "A soothing green bracelet linked with luck, growth, and heart-centered balance.", "benefits": "Luck, growth, opportunity, heart balance", "tags": ["wealth", "luck", "growth", "heart"]},
+    "VA-BR-LL-011": {"name": "Lapis Lazuli Bracelet", "mrp": 999, "price": 699, "discount": 30, "gemstones": "Lapis Lazuli", "stock": "In Stock", "description": "A royal blue bracelet for wisdom, communication, and inner truth.", "benefits": "Wisdom, communication, truth, self-awareness", "tags": ["wisdom", "communication", "study", "intuition"]},
+    "VA-BR-MN-012": {"name": "Moonstone Bracelet", "mrp": 1099, "price": 749, "discount": 32, "gemstones": "White / Rainbow Moonstone", "stock": "In Stock", "description": "A gentle luminous bracelet associated with emotional balance and intuition.", "benefits": "Emotional balance, intuition, feminine energy, calmness", "tags": ["moon", "intuition", "peace", "emotional healing"]},
+    "VA-BR-7C-013": {"name": "7 Chakra Bracelet", "mrp": 899, "price": 599, "discount": 33, "gemstones": "7 Chakra mixed gemstones", "stock": "In Stock", "description": "A multi-color chakra bracelet designed for energetic balance and alignment.", "benefits": "Chakra balance, energy alignment, positivity, overall wellness", "tags": ["chakra", "healing", "balance", "spirituality"]},
+    "VA-BR-IO-014": {"name": "Iolite Bracelet", "mrp": 1099, "price": 799, "discount": 27, "gemstones": "Iolite", "stock": "In Stock", "description": "A deep blue-grey bracelet for intuition, vision, and inner direction.", "benefits": "Intuition, vision, inner guidance, mental clarity", "tags": ["intuition", "clarity", "spirituality", "focus"]},
+}
+
+
 BRACELET_BY_PLANET = {
-    "Sun": {"product_id": "citrine-tiger-eye", "name": "Citrine + Tiger Eye Bracelet", "why": "Surya support confidence, vitality aur personal authority ko steady karta hai."},
-    "Moon": {"product_id": "rose-quartz-moonstone", "name": "Rose Quartz + Moonstone Bracelet", "why": "Chandra support emotional calm, sensitivity aur inner balance ke liye diya gaya hai."},
-    "Mars": {"product_id": "red-jasper-tiger-eye", "name": "Red Jasper + Tiger Eye Bracelet", "why": "Mangal support courage, stamina aur controlled action ko ground karta hai."},
-    "Mercury": {"product_id": "green-aventurine-lapis-lazuli", "name": "Green Aventurine + Lapis Lazuli Bracelet", "why": "Budh support communication, study, business clarity aur decision-making ke liye hai."},
-    "Jupiter": {"product_id": "citrine-yellow-aventurine", "name": "Citrine + Yellow Aventurine Bracelet", "why": "Guru support wisdom, growth, guidance aur dharmic expansion ko strengthen karta hai."},
-    "Venus": {"product_id": "rose-quartz-green-aventurine", "name": "Rose Quartz + Green Aventurine Bracelet", "why": "Shukra support love, harmony, comfort aur heart-healing themes ke liye hai."},
-    "Saturn": {"product_id": "black-tourmaline-blue-sapphire-substitute", "name": "Black Tourmaline + Blue Sapphire Substitute Bracelet", "why": "Shani support discipline, grounding, patience aur pressure protection ke liye diya gaya hai."},
-    "Rahu": {"product_id": "triple-protection-amethyst", "name": "Triple Protection + Amethyst Bracelet", "why": "Rahu support mental noise, obsession, nazar/protection aur aura cleansing ke liye hai."},
-    "Ketu": {"product_id": "amethyst-clear-quartz", "name": "Amethyst + Clear Quartz Bracelet", "why": "Ketu support detachment, intuition, spiritual clarity aur grounding ke liye hai."},
+    "Sun": {"sku": "VA-BR-CT-005", "why": "Surya support confidence, vitality aur personal authority ko steady karta hai."},
+    "Moon": {"sku": "VA-BR-MN-012", "why": "Chandra support emotional calm, sensitivity aur inner balance ke liye diya gaya hai."},
+    "Mars": {"sku": "VA-BR-RJ-007", "why": "Mangal support courage, stamina aur controlled action ko ground karta hai."},
+    "Mercury": {"sku": "VA-BR-LL-011", "why": "Budh support communication, study, business clarity aur decision-making ke liye hai."},
+    "Jupiter": {"sku": "VA-BR-YA-006", "why": "Guru support wisdom, growth, guidance aur dharmic expansion ko strengthen karta hai."},
+    "Venus": {"sku": "VA-BR-RQ-009", "why": "Shukra support love, harmony, comfort aur heart-healing themes ke liye hai."},
+    "Saturn": {"sku": "VA-BR-BT-004", "why": "Shani support discipline, grounding, patience aur pressure protection ke liye diya gaya hai."},
+    "Rahu": {"sku": "VA-BR-TP-001", "why": "Rahu support mental noise, obsession, nazar/protection aur aura cleansing ke liye hai."},
+    "Ketu": {"sku": "VA-BR-AM-002", "why": "Ketu support detachment, intuition, spiritual clarity aur grounding ke liye hai."},
 }
 
 
@@ -239,8 +259,22 @@ def _current_transit_notes(chart) -> list[str]:
         return []
 
 
+def _bracelet_image_url(sku: str) -> str:
+    return f"https://veshannastro.co.in/images/bracelets/{sku}.webp"
+
+
+def _bracelet_checkout_url(skus: list[str]) -> str:
+    clean_skus = [sku for sku in skus if sku in BRACELET_CATALOG]
+    base = (BRACELET_SHOP_URL or "https://veshannastro.co.in/").split("#", 1)[0]
+    separator = "&" if "?" in base else "?"
+    query = urllib.parse.urlencode({"maya_bundle": ",".join(clean_skus)})
+    return f"{base}{separator}{query}#bracelet-shop"
+
+
 def _bracelet_card(planet_name: str, role: str, chart, details, transit_notes: list[str]):
-    product = BRACELET_BY_PLANET.get(planet_name) or BRACELET_BY_PLANET["Rahu"]
+    product_ref = BRACELET_BY_PLANET.get(planet_name) or BRACELET_BY_PLANET["Rahu"]
+    sku = product_ref["sku"]
+    product = BRACELET_CATALOG[sku]
     if role == "Antardasha":
         period = f"{details['antar_start'].strftime('%d %b %Y')} to {details['antar_end'].strftime('%d %b %Y')}"
     elif role == "Mahadasha":
@@ -249,15 +283,26 @@ def _bracelet_card(planet_name: str, role: str, chart, details, transit_notes: l
         period = f"{details['pratyantar_start'].strftime('%d %b %Y')} to {details['pratyantar_end'].strftime('%d %b %Y')}"
     gochar = " ".join(transit_notes[:2]) if transit_notes else "Current Gochar support Dasha activation ke saath read kiya gaya."
     return {
-        "product_id": product["product_id"],
+        "sku": sku,
+        "product_id": sku,
         "name": product["name"],
-        "why": product["why"],
-        "planetary_reason": product["why"],
+        "gemstones": product["gemstones"],
+        "description": product["description"],
+        "benefits": product["benefits"],
+        "tags": product["tags"],
+        "stock": product["stock"],
+        "why": product_ref["why"],
+        "planetary_reason": product_ref["why"],
         "dasha_gochar_reason": f"{role} lord {planet_name} active hai. {_planet_chart_context(chart, planet_name)} Gochar check: {gochar}",
         "best_period": period,
         "wearing_instruction": "Right/receiving wrist par subah sankalp ke saath pehnen. Isse spiritual support maana jaye, guaranteed result nahi.",
-        "price": "Contact for price",
-        "product_url": f"/bracelets?ref=maya&id={product['product_id']}",
+        "mrp": product["mrp"],
+        "price_value": product["price"],
+        "discount": product["discount"],
+        "price": f"Rs. {product['price']}",
+        "image_url": _bracelet_image_url(sku),
+        "product_url": _bracelet_checkout_url([sku]),
+        "discount_note": "15% AI recommendation discount auto-applies in cart.",
     }
 
 
@@ -269,13 +314,18 @@ def _build_bracelet_recommendations(chart, goal: Optional[str]):
     if "Saturn" not in ordered_planets:
         ordered_planets.append("Saturn")
     selected = []
+    selected_skus = set()
     for planet in ordered_planets:
-        if planet in BRACELET_BY_PLANET and planet not in selected:
+        product_ref = BRACELET_BY_PLANET.get(planet)
+        sku = product_ref["sku"] if product_ref else ""
+        if planet in BRACELET_BY_PLANET and planet not in selected and sku not in selected_skus:
             selected.append(planet)
+            selected_skus.add(sku)
         if len(selected) == 3:
             break
     roles = ["Antardasha", "Mahadasha", "Pratyantardasha/Goal"]
     cards = [_bracelet_card(planet, roles[i], chart, details, transit_notes) for i, planet in enumerate(selected)]
+    recommended_skus = [card["sku"] for card in cards]
     remedy_planet = details["antar"] if details["antar"] in PLANET_REMEDIES else details["maha"]
     return {
         "message": (
@@ -293,6 +343,9 @@ def _build_bracelet_recommendations(chart, goal: Optional[str]):
         },
         "transit_notes": transit_notes,
         "recommendations": cards,
+        "recommended_skus": recommended_skus,
+        "checkout_url": _bracelet_checkout_url(recommended_skus),
+        "discount_note": "15% AI recommendation discount cart mein automatically apply hoga.",
         "final_remedy": PLANET_REMEDIES.get(remedy_planet, PLANET_REMEDIES["Saturn"]),
         "disclaimer": "Gemstone bracelets aur remedies spiritual support hain; medical, legal, financial ya guaranteed result ka replacement nahi.",
     }
@@ -305,6 +358,10 @@ def _chart_visual_from_row(row):
         return json.loads(row["chart_visual"])
     except Exception:
         return None
+
+
+def _chart_is_current(row) -> bool:
+    return bool(row and row.get("chart_summary") and ASTRO_ENGINE_VERSION in row["chart_summary"])
 
 
 def _cta_buttons():
@@ -494,6 +551,15 @@ def start(req: StartReq):
     row = db.get_or_create(req.session_id)
     credit_status = db.credit_status(req.session_id, FREE_LIMIT)
     if row["stage"] == "ready":
+        if not _chart_is_current(row):
+            db.update(req.session_id, stage="setup", chart_summary=None, chart_visual=None, history="[]")
+            return _reply(
+                "Maya ka astrology engine update hua hai. Accurate Kundli ke liye birth details dobara fill kijiye; purani saved Dasha reading use nahi hogi.",
+                stage="setup",
+                show_form=True,
+                credits=credit_status["credits"],
+                credit_status=credit_status,
+            )
         return _reply(
             f"Namaste {row['name']}, welcome back. Aap apna question pooch sakte hain.",
             stage="ready",
@@ -607,6 +673,17 @@ def message(req: MessageReq):
             "Pehle birth details setup karte hain, tabhi main accurate Kundli reading de paungi.",
             stage="setup",
             show_form=True,
+        )
+
+    if not _chart_is_current(row):
+        db.update(req.session_id, stage="setup", chart_summary=None, chart_visual=None, history="[]")
+        credit_status = db.credit_status(req.session_id, FREE_LIMIT)
+        return _reply(
+            "Maya ka astrology engine update hua hai. Accurate Kundli ke liye birth details dobara fill kijiye; purani saved Dasha reading use nahi hogi.",
+            stage="setup",
+            show_form=True,
+            credits=credit_status["credits"],
+            credit_status=credit_status,
         )
 
     status = db.credit_status(req.session_id, FREE_LIMIT)

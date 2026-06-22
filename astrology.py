@@ -15,6 +15,8 @@ import swisseph as swe
 
 swe.set_sid_mode(swe.SIDM_LAHIRI)   # Lahiri ayanamsha = standard Vedic
 
+ENGINE_VERSION = "vedic-lahiri-dasha-drishti-v4-2026-06-23"
+
 SIGNS = [
     "Aries (Mesha)", "Taurus (Vrishabha)", "Gemini (Mithuna)",
     "Cancer (Karka)", "Leo (Simha)", "Virgo (Kanya)",
@@ -170,6 +172,7 @@ class BirthChart:
         except Exception:
             current_dasha = f"{self.current_mahadasha()} Mahadasha"
         lines = [
+            f"Backend metadata (do not mention to user): chart engine {ENGINE_VERSION}",
             f"Birth details: {self.date_of_birth} at {self.time_of_birth}, "
             f"{self.place_of_birth}",
             f"Ascendant (Lagna): {self.ascendant_sign}",
@@ -292,6 +295,8 @@ def calculate_chart_from_coords(date_of_birth, time_of_birth, latitude,
     """Compute a sidereal chart directly from coordinates (no geocoding)."""
     y, m, d = _normalize_date(date_of_birth)
     hh, mm = _normalize_time(time_of_birth)
+    iso_dob = f"{y:04d}-{m:02d}-{d:02d}"
+    iso_tob = f"{hh:02d}:{mm:02d}"
     local_tz = zoneinfo.ZoneInfo(tz_name) if tz_name else _dt.timezone.utc
     local_dt = _dt.datetime(y, m, d, hh, mm, tzinfo=local_tz)
     utc_dt = local_dt.astimezone(_dt.timezone.utc)
@@ -338,7 +343,7 @@ def calculate_chart_from_coords(date_of_birth, time_of_birth, latitude,
         False, ketu_house))
 
     return BirthChart(
-        date_of_birth, time_of_birth, place_label, latitude, longitude,
+        iso_dob, iso_tob, place_label, latitude, longitude,
         asc_sign, asc_sign_idx, moon_sign, sun_sign, nakshatra,
         moon_nak_idx, moon_pada, moon_nak_lord, moon_longitude_sid,
         planets, ascendant_offset=asc_offset
@@ -373,8 +378,36 @@ DEBILITATION = {p: (s + 6) % 12 for p, s in EXALTATION.items()}
 OWN_SIGNS = {"Sun": [4], "Moon": [3], "Mars": [0, 7], "Mercury": [2, 5],
              "Jupiter": [8, 11], "Venus": [1, 6], "Saturn": [9, 10]}
 
-SPECIAL_ASPECTS = {"Mars": [4, 7, 8], "Jupiter": [5, 7, 9], "Saturn": [3, 7, 10]}
+SPECIAL_ASPECTS = {
+    "Mars": [4, 7, 8],
+    "Jupiter": [5, 7, 9],
+    "Saturn": [3, 7, 10],
+    # Common Parashari/Nadi practice reads Rahu-Ketu full drishti on 5/7/9.
+    "Rahu": [5, 7, 9],
+    "Ketu": [5, 7, 9],
+}
 DEFAULT_ASPECT = [7]
+
+
+def _aspect_numbers(planet_name: str) -> list[int]:
+    """Vedic full graha drishti numbers, counted inclusively from the planet."""
+    return SPECIAL_ASPECTS.get(planet_name, DEFAULT_ASPECT)
+
+
+def _aspect_target_house(source_house: int, aspect_number: int) -> int:
+    """Return target house for inclusive Vedic aspect counting.
+
+    Example: 7th aspect from H1 is H7, so the zero-based offset is 6, not 7.
+    """
+    return (source_house + aspect_number - 2) % 12 + 1
+
+
+def _aspect_target_houses(source_house: int, planet_name: str) -> list[int]:
+    return sorted({_aspect_target_house(source_house, n) for n in _aspect_numbers(planet_name)})
+
+
+def _planet_aspects_house(planet, target_house: int) -> bool:
+    return target_house in _aspect_target_houses(planet.house, planet.name)
 
 
 def _dignity(name, sign_idx):
@@ -504,7 +537,7 @@ def _validate_chart(chart):
 
 
 
-def _vimshottari_periods(chart, depth_date=None):
+def _legacy_vimshottari_periods_unused(chart, depth_date=None):
     """Return (mahadasha_lord, antardasha_lord, maha_end_date, antar_end_date).
 
     FIX 1: nak_elapsed_fraction must use (moon_lon - nak_start) / nak_size
@@ -594,6 +627,10 @@ def _dasha_subperiods(parent_lord, start_date, span_days):
 
 
 def _find_period(periods, target_date):
+    if target_date < periods[0]["start"]:
+        return periods[0]
+    if target_date >= periods[-1]["end"]:
+        return periods[-1]
     for period in periods:
         if period["start"] <= target_date < period["end"]:
             return period
@@ -697,9 +734,8 @@ def _current_transits(asc_sign_idx, moon_sign_idx, natal_planets=None):
         from_moon = (s_idx - moon_sign_idx) % 12 + 1
         deg = lon % 30
 
-        # Compute which houses this transiting planet aspects
-        asp_offsets = SPECIAL_ASPECTS.get(name, DEFAULT_ASPECT)
-        asp_houses = sorted(set((house - 1 + a) % 12 + 1 for a in asp_offsets))
+        # Compute which houses this transiting planet aspects.
+        asp_houses = _aspect_target_houses(house, name)
 
         # Find natal planets in aspected houses
         natal_hit = []
@@ -1046,13 +1082,10 @@ def _grade_house(chart, house):
 
     # Aspects onto the house
     for p in chart.planets:
-        if p.name in ("Rahu", "Ketu"):
-            continue
-        asp = SPECIAL_ASPECTS.get(p.name, DEFAULT_ASPECT)
-        if any((p.house - 1 + a) % 12 + 1 == house for a in asp):
+        if _planet_aspects_house(p, house):
             if p.name in ("Jupiter", "Venus", "Mercury", "Moon"):
                 score += 1; factors.append(f"benefic {p.name} aspects the {_ord(house)} house (helps)")
-            elif p.name in ("Saturn", "Mars", "Sun"):
+            elif p.name in ("Saturn", "Mars", "Sun", "Rahu", "Ketu"):
                 factors.append(f"malefic {p.name} aspects the {_ord(house)} house (pressure/discipline)")
 
     # Occupants
@@ -1263,10 +1296,7 @@ def _aspects_received(chart):
     """Which houses each planet aspects (Vedic full aspects)."""
     lines = []
     for p in chart.planets:
-        if p.name in ("Rahu", "Ketu"):
-            continue
-        asp = SPECIAL_ASPECTS.get(p.name, DEFAULT_ASPECT)
-        houses = sorted(set((p.house - 1 + a) % 12 + 1 for a in asp))
+        houses = _aspect_target_houses(p.house, p.name)
         lines.append(f"{p.name} (house {p.house}) aspects house(s) {', '.join(map(str, houses))}")
     return lines
 
@@ -1275,11 +1305,7 @@ def _aspects_on_houses(chart):
     """Which planets aspect each house — house-centric view to prevent hallucination."""
     house_aspects = {h: [] for h in range(1, 13)}
     for p in chart.planets:
-        if p.name in ("Rahu", "Ketu"):
-            continue
-        asp = SPECIAL_ASPECTS.get(p.name, DEFAULT_ASPECT)
-        for a in asp:
-            target = (p.house - 1 + a) % 12 + 1
+        for target in _aspect_target_houses(p.house, p.name):
             house_aspects[target].append(f"{p.name}(H{p.house})")
     lines = []
     for h in range(1, 13):
@@ -1293,11 +1319,11 @@ def _aspects_on_houses(chart):
 def _mutual_aspects(chart):
     """Planets that mutually aspect each other — powerful combinations."""
     lines = []
-    planets = [p for p in chart.planets if p.name not in ("Rahu", "Ketu")]
+    planets = list(chart.planets)
     for i, p1 in enumerate(planets):
         for p2 in planets[i+1:]:
-            asp1 = set((p1.house - 1 + a) % 12 + 1 for a in SPECIAL_ASPECTS.get(p1.name, DEFAULT_ASPECT))
-            asp2 = set((p2.house - 1 + a) % 12 + 1 for a in SPECIAL_ASPECTS.get(p2.name, DEFAULT_ASPECT))
+            asp1 = set(_aspect_target_houses(p1.house, p1.name))
+            asp2 = set(_aspect_target_houses(p2.house, p2.name))
             if p2.house in asp1 and p1.house in asp2:
                 lines.append(f"{p1.name}(H{p1.house}) and {p2.name}(H{p2.house}) mutually aspect each other")
     return lines

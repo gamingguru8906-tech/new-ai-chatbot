@@ -77,17 +77,52 @@
     { key: "whatsapp", label: "WhatsApp", title: "Where should Maya send your result?", type: "tel", placeholder: "Enter WhatsApp number" }
   ];
 
+  var SHOP_URL = "https://veshannastro.co.in/";
   var fallbackMap = {
-    1: ["citrine-tiger-eye", "Citrine + Tiger Eye Bracelet", "Sun support for confidence, vitality, and personal authority."],
-    2: ["rose-quartz-moonstone", "Rose Quartz + Moonstone Bracelet", "Moon support for emotional calm and inner balance."],
-    3: ["citrine-yellow-aventurine", "Citrine + Yellow Aventurine Bracelet", "Jupiter support for growth, wisdom, and expansion."],
-    4: ["triple-protection-amethyst", "Triple Protection + Amethyst Bracelet", "Rahu-style protection for clarity and aura cleansing."],
-    5: ["green-aventurine-lapis-lazuli", "Green Aventurine + Lapis Lazuli Bracelet", "Mercury support for communication and practical clarity."],
-    6: ["rose-quartz-green-aventurine", "Rose Quartz + Green Aventurine Bracelet", "Venus support for love, harmony, and heart healing."],
-    7: ["amethyst-clear-quartz", "Amethyst + Clear Quartz Bracelet", "Ketu-style support for spiritual clarity and grounding."],
-    8: ["black-tourmaline-blue-sapphire-substitute", "Black Tourmaline + Blue Sapphire Substitute Bracelet", "Saturn support for discipline, grounding, and pressure protection."],
-    9: ["red-jasper-tiger-eye", "Red Jasper + Tiger Eye Bracelet", "Mars support for courage, stamina, and controlled action."]
+    1: ["VA-BR-CT-005", "Citrine Bracelet", "Sun support for confidence, vitality, and personal authority.", 999, 699, 30, "Citrine"],
+    2: ["VA-BR-MN-012", "Moonstone Bracelet", "Moon support for emotional calm and inner balance.", 1099, 749, 32, "White / Rainbow Moonstone"],
+    3: ["VA-BR-YA-006", "Yellow Aventurine Bracelet", "Jupiter support for growth, wisdom, and expansion.", 799, 499, 38, "Yellow Aventurine"],
+    4: ["VA-BR-TP-001", "Triple Protection Bracelet", "Rahu-style protection for clarity, grounding, and aura cleansing.", 999, 699, 30, "Tiger Eye + Black Obsidian + Hematite"],
+    5: ["VA-BR-LL-011", "Lapis Lazuli Bracelet", "Mercury support for communication and practical clarity.", 999, 699, 30, "Lapis Lazuli"],
+    6: ["VA-BR-RQ-009", "Rose Quartz Bracelet", "Venus support for love, harmony, and heart healing.", 799, 549, 31, "Rose Quartz"],
+    7: ["VA-BR-AM-002", "Amethyst Bracelet", "Ketu-style support for spiritual clarity and grounding.", 899, 599, 33, "Amethyst"],
+    8: ["VA-BR-BT-004", "Black Tourmaline Bracelet", "Saturn support for discipline, grounding, and pressure protection.", 899, 649, 28, "Black Tourmaline"],
+    9: ["VA-BR-RJ-007", "Red Jasper Bracelet", "Mars support for courage, stamina, and controlled action.", 799, 499, 38, "Red Jasper"]
   };
+
+  function braceletImageUrl(sku) {
+    return "https://veshannastro.co.in/images/bracelets/" + encodeURIComponent(sku) + ".webp";
+  }
+
+  function braceletCheckoutUrl(skus, fallbackUrl) {
+    if (fallbackUrl) return fallbackUrl;
+    var clean = (skus || []).filter(Boolean).join(",");
+    return SHOP_URL + "?maya_bundle=" + encodeURIComponent(clean) + "#bracelet-shop";
+  }
+
+  function money(value) {
+    var amount = Number(value || 0);
+    return "Rs. " + amount.toLocaleString("en-IN");
+  }
+
+  function braceletImageFallback(img) {
+    var base = img.getAttribute("data-img-base");
+    var current = Number(img.getAttribute("data-img-ext-index") || "0");
+    var exts = ["webp", "jpg", "jpeg", "png"];
+    var next = current + 1;
+    if (!base || next >= exts.length) {
+      img.onerror = null;
+      img.style.display = "none";
+      var parent = img.parentElement;
+      if (parent && !parent.querySelector(".maya-product-fallback")) {
+        parent.insertAdjacentHTML("beforeend", '<div class="maya-product-fallback">Veshannastro</div>');
+      }
+      return;
+    }
+    img.setAttribute("data-img-ext-index", String(next));
+    img.src = base + "." + exts[next];
+  }
+  window.mayaBraceletImageFallback = braceletImageFallback;
 
   function readCredits() {
     var stored = Number(localStorage.getItem("mayaCredits") || "300");
@@ -413,6 +448,7 @@
       ".maya-progress{height:7px;margin:12px 0 18px;overflow:hidden;background:#eadcc5;border-radius:999px}.maya-progress span{display:block;height:100%;background:linear-gradient(90deg,#b78325,#efcc72);border-radius:999px}.maya-field{display:grid;gap:8px}.maya-field label{color:#4f3c2a;font-size:12px;font-weight:900;text-transform:uppercase}.maya-field input{min-height:52px;padding:0 14px;background:#fbf3e7;color:#211a14;border:1px solid rgba(146,104,43,.32);border-radius:14px;font-size:16px}",
       ".maya-field-wrap{position:relative;display:grid}.maya-field-wrap input{padding-right:56px}.maya-icon-button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(146,104,43,.24);border-radius:12px;background:#fffaf1;color:#3a2b1d;font-size:18px;font-weight:900;cursor:pointer}.maya-hidden-picker{position:absolute;right:8px;top:50%;width:40px;height:40px;opacity:0;pointer-events:none}.maya-field-hint{color:#7a6248;font-size:12px;line-height:1.4}.maya-field-error{display:none;margin-top:8px;padding:9px 11px;background:#fff0e8;color:#7b2d1c;border:1px solid rgba(123,45,28,.18);border-radius:12px;font-size:13px;line-height:1.4}.maya-field-error.is-visible{display:block}",
       ".maya-report{display:grid;gap:14px}.maya-remedy{padding:15px;background:#fffdf7;border:1px solid rgba(146,104,43,.25);border-left:5px solid #d3a83d;border-radius:16px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-remedy h4{margin:0 0 8px;color:#211a14;font:600 20px Georgia,serif}.maya-remedy p{margin:0 0 9px;color:#5d4935;font-size:13px;line-height:1.5}.maya-remedy a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;background:#251d16;color:#fff8e9;border-radius:999px;text-decoration:none;font-weight:900}.maya-disclaimer{padding:12px;background:#f7ead6;color:#5d4935;border-radius:14px;font-size:12px;line-height:1.5}.maya-whatsapp{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;background:#176f46;color:#fffaf0;border-radius:999px;text-decoration:none;font-weight:900}",
+      ".maya-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.maya-product-card{overflow:hidden;background:#fffdf7;border:1px solid rgba(146,104,43,.25);border-radius:18px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-product-media{position:relative;aspect-ratio:1/1;background:#f4e7d4;display:grid;place-items:center;overflow:hidden}.maya-product-media img{width:100%;height:100%;object-fit:cover;display:block}.maya-product-fallback{width:100%;height:100%;display:grid;place-items:center;color:#8b6224;font:700 16px Georgia,serif;background:radial-gradient(circle at 35% 25%,#fff8dc,#dfc082)}.maya-product-badge{position:absolute;left:10px;top:10px;padding:5px 8px;border-radius:999px;background:#251d16;color:#fff8e9;font-size:11px;font-weight:900}.maya-product-body{padding:13px;display:grid;gap:8px}.maya-product-sku{color:#956b24;font-size:10.5px;font-weight:900;text-transform:uppercase}.maya-product-card h4{margin:0;color:#211a14;font:600 18px/1.15 Georgia,serif}.maya-product-card p{margin:0;color:#5d4935;font-size:12.5px;line-height:1.42}.maya-product-buy{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}.maya-product-buy span{display:grid;gap:1px;color:#211a14}.maya-product-buy small{color:#7a6248;font-size:11px}.maya-product-buy button,.maya-cart-cta button{min-height:38px;padding:0 13px;border:0;border-radius:999px;background:#251d16;color:#fff8e9;font-weight:900;cursor:pointer}.maya-product-buy button:disabled,.maya-cart-cta button:disabled{opacity:.72;cursor:wait}.maya-cart-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;background:#fff3da;border:1px solid rgba(146,104,43,.25);border-radius:16px}.maya-cart-cta div{display:grid;gap:2px;color:#241c15}.maya-cart-cta span{color:#6b5239;font-size:12.5px}.maya-cart-fly{position:fixed;z-index:2147483000;width:36px;height:36px;border-radius:999px;background:radial-gradient(circle at 35% 30%,#fff4b2,#d4a236 70%,#3a2b1d);box-shadow:0 14px 40px rgba(42,31,20,.32);pointer-events:none;transition:transform .68s cubic-bezier(.18,.78,.24,1),opacity .68s ease}",
       ".maya-kundli-card{margin:0 0 14px;padding:14px;background:#fffdf7;border:1px solid rgba(146,104,43,.22);border-radius:18px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-kundli-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.maya-kundli-top h4{margin:0;color:#241c15;font:600 20px/1.1 Georgia,serif}.maya-kundli-top p{margin:4px 0 0;color:#6b5239;font-size:12.5px;line-height:1.35}.maya-kundli-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.maya-house{min-height:66px;padding:7px;background:#fbf3e7;border:1px solid rgba(146,104,43,.22);border-radius:12px;display:grid;align-content:space-between}.maya-house b{color:#8b6224;font-size:11px}.maya-house span{color:#211a14;font-size:12px;font-weight:800}.maya-house small{color:#6b5239;font-size:11px;line-height:1.25}.maya-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}.maya-chip{padding:7px 9px;background:#f7ead6;color:#4f3c2a;border:1px solid rgba(146,104,43,.18);border-radius:999px;font-size:11.5px;font-weight:800}.maya-accordion{display:grid;gap:8px;margin:0 0 14px}.maya-accordion details{background:#fffaf1;border:1px solid rgba(146,104,43,.18);border-radius:12px;padding:10px 12px}.maya-accordion summary{cursor:pointer;color:#3a2b1d;font-weight:900;font-size:13px}.maya-accordion p{margin:8px 0 0;color:#695039;font-size:12.5px;line-height:1.45}.maya-timeline{margin-top:10px;padding:10px;background:#f7ead6;border:1px solid rgba(146,104,43,.16);border-radius:12px}.maya-mini-title{font-size:11px;font-weight:900;text-transform:uppercase;color:#956b24;margin-bottom:7px}.maya-time-row{display:flex;align-items:center;gap:8px;margin-top:5px;color:#3a2b1d;font-size:12px}.maya-time-row span{width:20px;height:20px;display:grid;place-items:center;border-radius:999px;background:#251d16;color:#fff8e9;font-size:10px}.maya-credit-note{max-width:82%;margin:0 0 12px;padding:9px 12px;background:#f7ead6;border:1px solid rgba(146,104,43,.18);border-radius:12px;color:#5b452f;font-size:12.5px;font-weight:800}.maya-typing{display:inline-flex;gap:4px}.maya-typing i{width:6px;height:6px;border-radius:999px;background:#9a722d;animation:mayaBlink 1s infinite ease-in-out}.maya-typing i:nth-child(2){animation-delay:.16s}.maya-typing i:nth-child(3){animation-delay:.32s}@keyframes mayaBlink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}",
       ".maya-kundli-card--reference{padding:0;background:transparent;border:0;box-shadow:none}.maya-kundli-svg{width:100%;max-width:512px;display:block;margin:0 auto;background:transparent}.maya-kundli-outer{fill:#fffbd4;stroke:#ffad00;stroke-width:8;stroke-linejoin:round}.maya-kundli-inner-border{fill:none;stroke:#ff1b14;stroke-width:3;stroke-linejoin:round}.maya-kundli-line{fill:none;stroke:#ff1b14;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.maya-kundli-house{font-family:Georgia,'Times New Roman',serif;text-anchor:middle;fill:#c8102e;font-size:20px;font-weight:800}.maya-kundli-sign{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#16120f;font-size:13px;font-weight:800}.maya-kundli-planets{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#241c15;font-size:12px;font-weight:900}",
       "@keyframes mayaStepIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.maya-step-anim{animation:mayaStepIn .38s cubic-bezier(.22,.61,.36,1)}",
@@ -420,7 +456,7 @@
       ".maya-choice-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.maya-choice-card:hover{transform:translateY(-2px);box-shadow:0 22px 46px rgba(70,47,24,.16)}.maya-choice-card:active{transform:translateY(0)}",
       ".maya-choice-grid--goal{grid-template-columns:1fr}.maya-choice-card--goal{min-height:0;padding:15px 17px;display:flex;align-items:center;gap:14px;position:relative}.maya-choice-card--goal .maya-goal-icon{width:38px;height:38px;flex-shrink:0;border-radius:999px;display:grid;place-items:center;font-size:18px;background:radial-gradient(circle at 35% 30%,#fff2ad,#d9ae3e 68%,#9f7425);color:#241c15}.maya-choice-card--goal .maya-goal-text{display:grid;gap:2px}.maya-choice-card--goal strong{font:600 16px/1.2 Georgia,serif}.maya-choice-card--goal span{font-size:12.5px}.maya-choice-card--goal.is-selected{border-color:#b78325;background:#fff3da;box-shadow:0 0 0 2px rgba(183,131,37,.35),0 18px 38px rgba(70,47,24,.14)}.maya-choice-card--goal.is-selected::after{content:'\\2713';position:absolute;right:14px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:999px;background:#176f46;color:#fffaf0;display:grid;place-items:center;font-size:13px;font-weight:900}",
       ".maya-city-wrap{position:relative}.maya-city-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;background:#fffaf1;border:1px solid rgba(146,104,43,.3);border-radius:14px;box-shadow:0 22px 50px rgba(70,47,24,.2);max-height:260px;overflow:auto;display:none}.maya-city-list.is-open{display:block}.maya-city-option{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;padding:11px 14px;border:0;border-bottom:1px solid rgba(146,104,43,.12);background:transparent;cursor:pointer;font-family:inherit}.maya-city-option:last-child{border-bottom:0}.maya-city-option:hover,.maya-city-option.is-active{background:#fff3da}.maya-city-option strong{font-size:14px;color:#241c15;font-weight:700}.maya-city-option small{font-size:12px;color:#7a6248}.maya-city-confirmed{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;background:#eaf3de;border:1px solid rgba(39,80,10,.2);border-radius:12px;color:#27500a;font-size:12.5px;font-weight:700}.maya-city-unconfirmed{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;background:#fff0e8;border:1px solid rgba(123,45,28,.18);border-radius:12px;color:#7b2d1c;font-size:12.5px;line-height:1.45}",
-      "@media(max-width:720px){.maya-choice-grid{grid-template-columns:1fr}.maya-panel{width:100vw;height:100svh;border-radius:0}.maya-box{width:calc(100vw - 20px)}.maya-launcher{right:14px;bottom:14px}.maya-msg{max-width:92%}}"
+      "@media(max-width:720px){.maya-choice-grid{grid-template-columns:1fr}.maya-product-grid{grid-template-columns:1fr}.maya-cart-cta{align-items:flex-start;flex-direction:column}.maya-panel{width:100vw;height:100svh;border-radius:0}.maya-box{width:calc(100vw - 20px)}.maya-launcher{right:14px;bottom:14px}.maya-msg{max-width:92%}}"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -973,13 +1009,38 @@
 
   function fallbackGemstoneResult(reason) {
     var primary = fallbackMap[digitalRoot(state.gemData.dob)] || fallbackMap[4];
+    var secondary = fallbackMap[8];
     var start = new Date();
     var end = new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
     var period = start.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + " to " + end.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     function card(item) {
-      return { product_id: item[0], name: item[1], why: item[2], dasha_gochar_reason: reason || "Exact chart service was unavailable, so Maya used safe DOB fallback.", best_period: period, wearing_instruction: "Wear on your receptive wrist after a short morning prayer or sankalp.", price: "Contact for price", product_url: "/bracelets?ref=maya&id=" + item[0] };
+      return {
+        sku: item[0],
+        product_id: item[0],
+        name: item[1],
+        why: item[2],
+        gemstones: item[6],
+        mrp: item[3],
+        price_value: item[4],
+        discount: item[5],
+        image_url: braceletImageUrl(item[0]),
+        dasha_gochar_reason: reason || "Exact chart service was unavailable, so Maya used safe DOB fallback.",
+        best_period: period,
+        wearing_instruction: "Wear on your receptive wrist after a short morning prayer or sankalp.",
+        price: money(item[4]),
+        product_url: braceletCheckoutUrl([item[0]]),
+        discount_note: "15% AI recommendation discount auto-applies in cart."
+      };
     }
-    return { message: "Maya prepared a safe DOB-based remedy report from the available bracelet mapping.", recommendations: [card(primary), card(["seven-chakra-black-tourmaline", "7 Chakra + Black Tourmaline Bracelet", "General protection support for grounding, cleansing, and aura balance."])], final_remedy: "Final remedy: Roz subah 2 minute shant baithkar apne Isht Dev ka naam 11 baar lein, phir bracelet ko sankalp ke saath pehnen.", disclaimer: "Gemstone bracelets are spiritual/remedial support and are not a guaranteed replacement for medical, financial, legal, or professional advice." };
+    return {
+      message: "Maya prepared a safe DOB-based remedy report from the available bracelet catalog.",
+      recommendations: [card(primary), card(secondary)],
+      recommended_skus: [primary[0], secondary[0]],
+      checkout_url: braceletCheckoutUrl([primary[0], secondary[0]]),
+      discount_note: "15% AI recommendation discount cart mein automatically apply hoga.",
+      final_remedy: "Final remedy: Roz subah 2 minute shant baithkar apne Isht Dev ka naam 11 baar lein, phir bracelet ko sankalp ke saath pehnen.",
+      disclaimer: "Gemstone bracelets are spiritual/remedial support and are not a guaranteed replacement for medical, financial, legal, or professional advice."
+    };
   }
 
   function renderGemstone() {
@@ -1230,24 +1291,75 @@
     renderGemstone();
   }
 
+  function startMayaCartHandoff(button, skus, url) {
+    if (!skus || !skus.length) return;
+    var card = button.closest(".maya-product-card") || document.getElementById("mayaBundleCheckout");
+    var source = card && card.getBoundingClientRect ? card.getBoundingClientRect() : button.getBoundingClientRect();
+    var dot = document.createElement("div");
+    dot.className = "maya-cart-fly";
+    dot.style.left = Math.max(12, source.left + source.width / 2 - 18) + "px";
+    dot.style.top = Math.max(12, source.top + source.height / 2 - 18) + "px";
+    document.body.appendChild(dot);
+    requestAnimationFrame(function () {
+      dot.style.transform = "translate(calc(100vw - " + Math.round(source.left + source.width / 2 + 88) + "px), calc(100vh - " + Math.round(source.top + source.height / 2 + 92) + "px)) scale(.36)";
+      dot.style.opacity = "0";
+    });
+    button.disabled = true;
+    button.textContent = "Adding...";
+    setTimeout(function () {
+      window.location.href = url || braceletCheckoutUrl(skus);
+    }, 720);
+  }
+
   function renderReport() {
     var body = document.getElementById("mayaBody");
     var result = state.gemResult || {};
     var cards = result.recommendations || [];
+    var skus = result.recommended_skus || cards.map(function (card) { return card.sku || card.product_id; }).filter(Boolean);
+    var checkoutUrl = braceletCheckoutUrl(skus, result.checkout_url);
     var shareText = encodeURIComponent("Maya Remedy Report for " + state.gemData.name + "\n" + cards.map(function (card, index) { return (index + 1) + ". " + card.name; }).join("\n"));
     var phone = String(state.gemData.whatsapp || "").replace(/\D/g, "");
     body.innerHTML = [
       '<div class="maya-report">',
       '<div><div class="maya-kicker">Maya Remedy Report</div><div class="maya-title">' + escapeHtml(state.gemData.name) + ', your bracelet path is ready.</div><p class="maya-copy">' + escapeHtml(result.message) + '</p></div>',
-      cards.slice(0, 3).map(function (card) {
-        return '<article class="maya-remedy"><h4>' + escapeHtml(card.name) + '</h4><p>' + escapeHtml(card.why || card.planetary_reason) + '</p><p><strong>Dasha/Gochar:</strong> ' + escapeHtml(card.dasha_gochar_reason) + '</p><p><strong>Best period:</strong> ' + escapeHtml(card.best_period) + '</p><p><strong>Wearing:</strong> ' + escapeHtml(card.wearing_instruction) + '</p><p><strong>' + escapeHtml(card.price) + '</strong></p><a href="' + escapeHtml(card.product_url) + '">Order Now</a></article>';
-      }).join(""),
+      '<div class="maya-product-grid">' + cards.slice(0, 3).map(function (card) {
+        var sku = card.sku || card.product_id || "";
+        var img = card.image_url || braceletImageUrl(sku);
+        var imgBase = img.replace(/\.(webp|jpg|jpeg|png)(\?.*)?$/i, "");
+        return [
+          '<article class="maya-product-card" data-card-sku="' + escapeHtml(sku) + '">',
+          '  <div class="maya-product-media">',
+          '    <img src="' + escapeHtml(img) + '" data-img-base="' + escapeHtml(imgBase) + '" data-img-ext-index="0" alt="' + escapeHtml(card.name) + '" loading="lazy" decoding="async" onerror="window.mayaBraceletImageFallback(this);">',
+          '    <span class="maya-product-badge">' + escapeHtml(String(card.discount || "")) + '% OFF</span>',
+          '  </div>',
+          '  <div class="maya-product-body">',
+          '    <div class="maya-product-sku">' + escapeHtml(sku) + ' - Free size</div>',
+          '    <h4>' + escapeHtml(card.name) + '</h4>',
+          '    <p>' + escapeHtml(card.why || card.planetary_reason) + '</p>',
+          card.gemstones ? '<p><strong>Gemstones:</strong> ' + escapeHtml(card.gemstones) + '</p>' : '',
+          card.benefits ? '<p><strong>Purpose:</strong> ' + escapeHtml(card.benefits) + '</p>' : '',
+          '    <p><strong>Dasha/Gochar:</strong> ' + escapeHtml(card.dasha_gochar_reason) + '</p>',
+          '    <p><strong>Best period:</strong> ' + escapeHtml(card.best_period) + '</p>',
+          '    <div class="maya-product-buy"><span><strong>' + escapeHtml(card.price || money(card.price_value)) + '</strong>' + (card.mrp ? '<small><s>' + money(card.mrp) + '</s></small>' : '') + '</span><button type="button" data-maya-checkout="' + escapeHtml(sku) + '">Add</button></div>',
+          '  </div>',
+          '</article>'
+        ].join("");
+      }).join("") + '</div>',
+      '<div class="maya-cart-cta"><div><strong>Recommended set</strong><span>15% AI discount cart mein automatically apply hoga.</span></div><button type="button" id="mayaBundleCheckout" data-maya-checkout="' + escapeHtml(skus.join(",")) + '">Add set to cart</button></div>',
       result.final_remedy ? '<article class="maya-remedy"><h4>One Remedy</h4><p>' + escapeHtml(result.final_remedy) + '</p></article>' : '',
       '<a class="maya-whatsapp" target="_blank" rel="noopener" href="https://wa.me/' + phone + '?text=' + shareText + '">Send result on WhatsApp</a>',
       '<button class="maya-secondary" type="button" id="gemRestart">Start again</button>',
       '<div class="maya-disclaimer">' + escapeHtml(result.disclaimer) + '</div>',
       '</div>'
     ].join("");
+    body.querySelectorAll("[data-maya-checkout]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        var raw = event.currentTarget.getAttribute("data-maya-checkout") || "";
+        var chosenSkus = raw.split(",").map(function (item) { return item.trim(); }).filter(Boolean);
+        var url = raw.indexOf(",") > -1 ? checkoutUrl : braceletCheckoutUrl(chosenSkus);
+        startMayaCartHandoff(event.currentTarget, chosenSkus, url);
+      });
+    });
     document.getElementById("gemRestart").addEventListener("click", function () {
       state.gemStep = 0;
       state.gemResult = null;
