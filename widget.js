@@ -979,7 +979,7 @@
     function card(item) {
       return { product_id: item[0], name: item[1], why: item[2], dasha_gochar_reason: reason || "Exact chart service was unavailable, so Maya used safe DOB fallback.", best_period: period, wearing_instruction: "Wear on your receptive wrist after a short morning prayer or sankalp.", price: "Contact for price", product_url: "/bracelets?ref=maya&id=" + item[0] };
     }
-    return { message: "Maya prepared a safe DOB-based remedy report from the available bracelet mapping.", recommendations: [card(primary), card(["seven-chakra-black-tourmaline", "7 Chakra + Black Tourmaline Bracelet", "General protection support for grounding, cleansing, and aura balance."])], disclaimer: "Gemstone bracelets are spiritual/remedial support and are not a guaranteed replacement for medical, financial, legal, or professional advice." };
+    return { message: "Maya prepared a safe DOB-based remedy report from the available bracelet mapping.", recommendations: [card(primary), card(["seven-chakra-black-tourmaline", "7 Chakra + Black Tourmaline Bracelet", "General protection support for grounding, cleansing, and aura balance."])], final_remedy: "Final remedy: Roz subah 2 minute shant baithkar apne Isht Dev ka naam 11 baar lein, phir bracelet ko sankalp ke saath pehnen.", disclaimer: "Gemstone bracelets are spiritual/remedial support and are not a guaranteed replacement for medical, financial, legal, or professional advice." };
   }
 
   function renderGemstone() {
@@ -1242,6 +1242,7 @@
       cards.slice(0, 3).map(function (card) {
         return '<article class="maya-remedy"><h4>' + escapeHtml(card.name) + '</h4><p>' + escapeHtml(card.why || card.planetary_reason) + '</p><p><strong>Dasha/Gochar:</strong> ' + escapeHtml(card.dasha_gochar_reason) + '</p><p><strong>Best period:</strong> ' + escapeHtml(card.best_period) + '</p><p><strong>Wearing:</strong> ' + escapeHtml(card.wearing_instruction) + '</p><p><strong>' + escapeHtml(card.price) + '</strong></p><a href="' + escapeHtml(card.product_url) + '">Order Now</a></article>';
       }).join(""),
+      result.final_remedy ? '<article class="maya-remedy"><h4>One Remedy</h4><p>' + escapeHtml(result.final_remedy) + '</p></article>' : '',
       '<a class="maya-whatsapp" target="_blank" rel="noopener" href="https://wa.me/' + phone + '?text=' + shareText + '">Send result on WhatsApp</a>',
       '<button class="maya-secondary" type="button" id="gemRestart">Start again</button>',
       '<div class="maya-disclaimer">' + escapeHtml(result.disclaimer) + '</div>',

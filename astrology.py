@@ -164,6 +164,11 @@ class BirthChart:
         }
 
     def summary(self) -> str:
+        try:
+            maha, antar, _me, _ae = _vimshottari_periods(self)
+            current_dasha = f"{maha} Mahadasha / {antar} Antardasha"
+        except Exception:
+            current_dasha = f"{self.current_mahadasha()} Mahadasha"
         lines = [
             f"Birth details: {self.date_of_birth} at {self.time_of_birth}, "
             f"{self.place_of_birth}",
@@ -171,7 +176,7 @@ class BirthChart:
             f"Moon sign (Rashi): {self.moon_sign}",
             f"Sun sign: {self.sun_sign}",
             f"Birth Nakshatra: {self.nakshatra} (pada {self.nakshatra_pada}, lord {self.nakshatra_lord})",
-            f"Current Mahadasha: {self.current_mahadasha()}",
+            f"Current Dasha: {current_dasha}",
             "Planetary placements (with house, sign, dignity, nakshatra, retrograde):",
         ]
         sun = next((p for p in self.planets if p.name == "Sun"), None)
@@ -205,14 +210,18 @@ class BirthChart:
     def overview_block(self) -> str:
         """Short block used in the chart-ready greeting (like screenshot)."""
         d = self.doshas()
-        maha = self.current_mahadasha()
+        try:
+            maha, antar, _me, _ae = _vimshottari_periods(self)
+            dasha_line = f"{maha} Mahadasha / {antar} Antardasha"
+        except Exception:
+            dasha_line = f"{self.current_mahadasha()} Mahadasha"
         return (
             f"Your Chart Overview\n"
             f"- Rashi (Moon sign): {self.moon_sign}\n"
             f"- Nakshatra: {self.nakshatra} (pada {self.nakshatra_pada}, "
             f"lord {self.nakshatra_lord})\n"
             f"- Lagna (Ascendant): {self.ascendant_sign}\n"
-            f"- Current Mahadasha: {maha}\n\n"
+            f"- Current Dasha: {dasha_line}\n\n"
             f"Doshas - Manglik: {'yes' if d['manglik'] else 'no'}, "
             f"Sade Sati: {'yes' if d['sade_sati'] else 'no'}, "
             f"Kaal Sarp: {'yes' if d['kaal_sarp'] else 'no'}."
@@ -563,6 +572,97 @@ def _vimshottari_periods(chart, depth_date=None):
 
     antar_end = birth + dt.timedelta(days=maha_start_day + at + a_span)
     return maha, antar, maha_end, antar_end
+
+
+def _dasha_subperiods(parent_lord, start_date, span_days):
+    """Return Vimshottari child periods inside a Maha/Antar period."""
+    import datetime as dt
+    idx = DASHA_ORDER.index(parent_lord)
+    cursor = 0.0
+    periods = []
+    for i in range(9):
+        lord = DASHA_ORDER[(idx + i) % 9]
+        sub_span = span_days * DASHA_YEARS[lord] / 120.0
+        periods.append({
+            "lord": lord,
+            "start": start_date + dt.timedelta(days=cursor),
+            "end": start_date + dt.timedelta(days=cursor + sub_span),
+            "span_days": sub_span,
+        })
+        cursor += sub_span
+    return periods
+
+
+def _find_period(periods, target_date):
+    for period in periods:
+        if period["start"] <= target_date < period["end"]:
+            return period
+    return periods[-1]
+
+
+def _vimshottari_details(chart, depth_date=None):
+    """Authoritative Vimshottari timeline.
+
+    Birth gives the balance of the running Mahadasha. The running Mahadasha
+    began before birth, so Antardasha/Pratyantardasha must be counted from
+    that true start date, not restarted from the birth date.
+    """
+    import datetime as dt
+    lord = NAK_DASHA_LORD[chart.nakshatra_index]
+    total = DASHA_YEARS[lord] * 365.25
+    nak_size = 360.0 / 27.0
+    nak_start_lon = chart.nakshatra_index * nak_size
+    elapsed_fraction = (chart.moon_longitude - nak_start_lon) / nak_size
+    elapsed_fraction = max(0.0, min(elapsed_fraction, 0.9999))
+    elapsed_first = elapsed_fraction * total
+    remaining_first = total - elapsed_first
+
+    birth = dt.date.fromisoformat(chart.date_of_birth)
+    today = depth_date or dt.date.today()
+    maha_start = birth - dt.timedelta(days=elapsed_first)
+    maha_end = birth + dt.timedelta(days=remaining_first)
+    idx = DASHA_ORDER.index(lord)
+    maha = lord
+
+    while today >= maha_end:
+        maha_start = maha_end
+        idx = (idx + 1) % 9
+        maha = DASHA_ORDER[idx]
+        maha_end = maha_start + dt.timedelta(days=DASHA_YEARS[maha] * 365.25)
+
+    maha_span = DASHA_YEARS[maha] * 365.25
+    antardashas = _dasha_subperiods(maha, maha_start, maha_span)
+    antar_period = _find_period(antardashas, today)
+    pratyantars = _dasha_subperiods(
+        antar_period["lord"], antar_period["start"], antar_period["span_days"]
+    )
+    pratyantar_period = _find_period(pratyantars, today)
+
+    return {
+        "birth_lord": lord,
+        "birth_maha_start": birth - dt.timedelta(days=elapsed_first),
+        "birth_maha_end": birth + dt.timedelta(days=remaining_first),
+        "birth_maha_elapsed_fraction": elapsed_fraction,
+        "maha": maha,
+        "maha_start": maha_start,
+        "maha_end": maha_end,
+        "maha_span_days": maha_span,
+        "antar": antar_period["lord"],
+        "antar_start": antar_period["start"],
+        "antar_end": antar_period["end"],
+        "antar_span_days": antar_period["span_days"],
+        "pratyantar": pratyantar_period["lord"],
+        "pratyantar_start": pratyantar_period["start"],
+        "pratyantar_end": pratyantar_period["end"],
+        "antardashas": antardashas,
+        "pratyantars": pratyantars,
+    }
+
+
+def _vimshottari_periods(chart, depth_date=None):
+    """Return (mahadasha_lord, antardasha_lord, maha_end_date, antar_end_date)."""
+    details = _vimshottari_details(chart, depth_date)
+    return details["maha"], details["antar"], details["maha_end"], details["antar_end"]
 
 
 def _current_transits(asc_sign_idx, moon_sign_idx, natal_planets=None):
@@ -1476,34 +1576,10 @@ def _full_summary(self):
         # (critical for timing — Gemini must see all upcoming antardashas)
         lines.append(f"  Full antardasha sequence within {maha} Mahadasha:")
         a_idx = DASHA_ORDER.index(maha)
-        # Find maha start date
-        lord = NAK_DASHA_LORD[self.nakshatra_index]
-        total_first = DASHA_YEARS[lord] * 365.25
-        # CORRECT fraction: (moon_lon - nak_start) / nak_size
-        _NAK_SIZE = 360.0 / 27.0
-        _nak_start_lon = self.nakshatra_index * _NAK_SIZE
-        _elapsed_frac = max(0.0, min((self.moon_longitude - _nak_start_lon) / _NAK_SIZE, 0.9999))
-        elapsed_first = _elapsed_frac * total_first
-        remaining_first = total_first - elapsed_first
-        days_since_birth = (today - birth).days
-
-        if days_since_birth <= remaining_first:
-            maha_start_date = birth
-            maha_span = remaining_first
-        else:
-            day_cursor = remaining_first
-            idx = (DASHA_ORDER.index(lord) + 1) % 9
-            maha_start_date = birth
-            maha_span = 0.0
-            while True:
-                m2 = DASHA_ORDER[idx]
-                span2 = DASHA_YEARS[m2] * 365.25
-                if day_cursor + span2 > days_since_birth:
-                    maha_start_date = birth + _dt3.timedelta(days=day_cursor)
-                    maha_span = span2
-                    break
-                day_cursor += span2
-                idx = (idx + 1) % 9
+        # Use the same authoritative timeline as _vimshottari_periods.
+        details = _vimshottari_details(self)
+        maha_start_date = details["maha_start"]
+        maha_span = details["maha_span_days"]
         days_into_maha = (today - maha_start_date).days
         at = 0
         for i in range(9):

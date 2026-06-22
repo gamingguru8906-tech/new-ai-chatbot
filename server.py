@@ -123,6 +123,19 @@ class SetupReq(BaseModel):
     place: str
 
 
+class GemstoneReq(BaseModel):
+    session_id: Optional[str] = None
+    name: str
+    whatsapp: Optional[str] = None
+    dob: str
+    tob: str = "12:00"
+    birth_city: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timezone: Optional[str] = None
+    goal: Optional[str] = None
+
+
 def _reply(text, **extra):
     return {"reply": text, **extra}
 
@@ -148,6 +161,141 @@ def _locked_credit_reply(session_id: str):
         credit_status=status,
         buttons=[_payment_button()],
     )
+
+
+BRACELET_BY_PLANET = {
+    "Sun": {"product_id": "citrine-tiger-eye", "name": "Citrine + Tiger Eye Bracelet", "why": "Surya support confidence, vitality aur personal authority ko steady karta hai."},
+    "Moon": {"product_id": "rose-quartz-moonstone", "name": "Rose Quartz + Moonstone Bracelet", "why": "Chandra support emotional calm, sensitivity aur inner balance ke liye diya gaya hai."},
+    "Mars": {"product_id": "red-jasper-tiger-eye", "name": "Red Jasper + Tiger Eye Bracelet", "why": "Mangal support courage, stamina aur controlled action ko ground karta hai."},
+    "Mercury": {"product_id": "green-aventurine-lapis-lazuli", "name": "Green Aventurine + Lapis Lazuli Bracelet", "why": "Budh support communication, study, business clarity aur decision-making ke liye hai."},
+    "Jupiter": {"product_id": "citrine-yellow-aventurine", "name": "Citrine + Yellow Aventurine Bracelet", "why": "Guru support wisdom, growth, guidance aur dharmic expansion ko strengthen karta hai."},
+    "Venus": {"product_id": "rose-quartz-green-aventurine", "name": "Rose Quartz + Green Aventurine Bracelet", "why": "Shukra support love, harmony, comfort aur heart-healing themes ke liye hai."},
+    "Saturn": {"product_id": "black-tourmaline-blue-sapphire-substitute", "name": "Black Tourmaline + Blue Sapphire Substitute Bracelet", "why": "Shani support discipline, grounding, patience aur pressure protection ke liye diya gaya hai."},
+    "Rahu": {"product_id": "triple-protection-amethyst", "name": "Triple Protection + Amethyst Bracelet", "why": "Rahu support mental noise, obsession, nazar/protection aur aura cleansing ke liye hai."},
+    "Ketu": {"product_id": "amethyst-clear-quartz", "name": "Amethyst + Clear Quartz Bracelet", "why": "Ketu support detachment, intuition, spiritual clarity aur grounding ke liye hai."},
+}
+
+
+GOAL_PLANETS = {
+    "career_wealth": ["Saturn", "Mercury", "Jupiter"],
+    "love_relationships": ["Venus", "Moon", "Jupiter"],
+    "protection_grounding": ["Rahu", "Saturn", "Ketu"],
+    "health_energy": ["Sun", "Moon", "Mars"],
+    "spiritual_growth": ["Ketu", "Jupiter", "Moon"],
+}
+
+
+PLANET_REMEDIES = {
+    "Sun": "Final remedy: Roz subah Surya ko jal arpan karein aur 11 baar 'Om Suryaya Namah' bolen.",
+    "Moon": "Final remedy: Somvaar ko doodh ya chawal donate karein aur 11 baar 'Om Som Somaya Namah' bolen.",
+    "Mars": "Final remedy: Mangalvaar ko Hanuman ji ke saamne deepak jalakar 11 baar 'Om Angarakaya Namah' bolen.",
+    "Mercury": "Final remedy: Budhvaar ko hara moong donate karein aur 11 baar 'Om Budhaya Namah' bolen.",
+    "Jupiter": "Final remedy: Guruvaar ko haldi/chana dal donate karein aur 11 baar 'Om Gurave Namah' bolen.",
+    "Venus": "Final remedy: Shukravaar ko white sweets ya kapda donate karein aur 11 baar 'Om Shukraya Namah' bolen.",
+    "Saturn": "Final remedy: Shanivaar ko black sesame donate karein aur 108 baar 'Om Sham Shanicharaya Namah' bolen.",
+    "Rahu": "Final remedy: Shanivaar ko Durga Maa ko yaad karke 108 baar 'Om Raahave Namah' bolen aur black sesame donate karein.",
+    "Ketu": "Final remedy: Mangalvaar ko Ganesh ji ko durva chadhayein aur 108 baar 'Om Ketave Namah' bolen.",
+}
+
+
+def _birth_chart_from_gemstone_req(req: GemstoneReq):
+    place = req.birth_city.strip()
+    if req.latitude is not None and req.longitude is not None:
+        tz = req.timezone
+        if not tz:
+            from timezonefinder import TimezoneFinder
+
+            tz = TimezoneFinder().timezone_at(lat=req.latitude, lng=req.longitude) or "UTC"
+        return astrology.calculate_chart_from_coords(req.dob, req.tob, req.latitude, req.longitude, tz, place)
+    return astrology.calculate_chart(req.dob, req.tob, place)
+
+
+def _planet_chart_context(chart, planet_name: str) -> str:
+    planet = next((p for p in chart.planets if p.name == planet_name), None)
+    if not planet:
+        return f"{planet_name} placement available nahi hai."
+    dignity = ""
+    try:
+        sign_idx = astrology.SIGNS.index(planet.sign)
+        dig = astrology._dignity(planet.name, sign_idx)
+        dignity = f", dignity: {dig}" if dig else ""
+    except Exception:
+        pass
+    retro = ", retrograde" if getattr(planet, "retrograde", False) else ""
+    if planet_name in ("Rahu", "Ketu"):
+        return f"{planet_name} H{planet.house} mein {planet.sign} mein hai{retro}; karmic axis activate hoti hai."
+    lords = chart.house_lords_map()
+    ruled = [str(h) for h, lord in lords.items() if lord == planet_name]
+    lordship = f"rules H{','.join(ruled)}; " if ruled else ""
+    return f"{planet_name} {lordship}sits H{planet.house} mein {planet.sign}{dignity}{retro}."
+
+
+def _current_transit_notes(chart) -> list[str]:
+    try:
+        moon_idx = astrology.SIGNS.index(chart.moon_sign)
+        notes = astrology._current_transits(chart.ascendant_sign_index, moon_idx, chart.planets)
+        return [n for n in notes if n.startswith(("Jupiter", "Saturn", "Rahu"))][:4]
+    except Exception:
+        return []
+
+
+def _bracelet_card(planet_name: str, role: str, chart, details, transit_notes: list[str]):
+    product = BRACELET_BY_PLANET.get(planet_name) or BRACELET_BY_PLANET["Rahu"]
+    if role == "Antardasha":
+        period = f"{details['antar_start'].strftime('%d %b %Y')} to {details['antar_end'].strftime('%d %b %Y')}"
+    elif role == "Mahadasha":
+        period = f"{details['maha_start'].strftime('%d %b %Y')} to {details['maha_end'].strftime('%d %b %Y')}"
+    else:
+        period = f"{details['pratyantar_start'].strftime('%d %b %Y')} to {details['pratyantar_end'].strftime('%d %b %Y')}"
+    gochar = " ".join(transit_notes[:2]) if transit_notes else "Current Gochar support Dasha activation ke saath read kiya gaya."
+    return {
+        "product_id": product["product_id"],
+        "name": product["name"],
+        "why": product["why"],
+        "planetary_reason": product["why"],
+        "dasha_gochar_reason": f"{role} lord {planet_name} active hai. {_planet_chart_context(chart, planet_name)} Gochar check: {gochar}",
+        "best_period": period,
+        "wearing_instruction": "Right/receiving wrist par subah sankalp ke saath pehnen. Isse spiritual support maana jaye, guaranteed result nahi.",
+        "price": "Contact for price",
+        "product_url": f"/bracelets?ref=maya&id={product['product_id']}",
+    }
+
+
+def _build_bracelet_recommendations(chart, goal: Optional[str]):
+    details = astrology._vimshottari_details(chart)
+    transit_notes = _current_transit_notes(chart)
+    ordered_planets = [details["antar"], details["maha"], details["pratyantar"]]
+    ordered_planets += GOAL_PLANETS.get(goal or "", [])
+    if "Saturn" not in ordered_planets:
+        ordered_planets.append("Saturn")
+    selected = []
+    for planet in ordered_planets:
+        if planet in BRACELET_BY_PLANET and planet not in selected:
+            selected.append(planet)
+        if len(selected) == 3:
+            break
+    roles = ["Antardasha", "Mahadasha", "Pratyantardasha/Goal"]
+    cards = [_bracelet_card(planet, roles[i], chart, details, transit_notes) for i, planet in enumerate(selected)]
+    remedy_planet = details["antar"] if details["antar"] in PLANET_REMEDIES else details["maha"]
+    return {
+        "message": (
+            f"Current timing {details['maha']} Mahadasha / {details['antar']} Antardasha / "
+            f"{details['pratyantar']} Pratyantardasha activate kar raha hai. "
+            "Bracelet suggestions Dasha, Gochar aur chart placement ko combine karke diye gaye hain."
+        ),
+        "current_dasha": {
+            "mahadasha": details["maha"],
+            "antardasha": details["antar"],
+            "pratyantardasha": details["pratyantar"],
+            "mahadasha_end": details["maha_end"].isoformat(),
+            "antardasha_end": details["antar_end"].isoformat(),
+            "pratyantardasha_end": details["pratyantar_end"].isoformat(),
+        },
+        "transit_notes": transit_notes,
+        "recommendations": cards,
+        "final_remedy": PLANET_REMEDIES.get(remedy_planet, PLANET_REMEDIES["Saturn"]),
+        "disclaimer": "Gemstone bracelets aur remedies spiritual support hain; medical, legal, financial ya guaranteed result ka replacement nahi.",
+    }
 
 
 def _chart_visual_from_row(row):
@@ -428,6 +576,23 @@ def setup(req: SetupReq):
         overview=overview,
         ask_prompt="Ab apna specific question poochiye, jaise marriage, career, money, foreign travel, ya life direction. Agar full reading chahiye toh likhiye: Give me a full reading.",
     )
+
+
+@app.post("/api/gemstone/recommend")
+def gemstone_recommend(req: GemstoneReq):
+    if not req.name.strip() or not req.dob.strip() or not req.birth_city.strip():
+        return {"ok": False, "error": "Name, date of birth, time aur birth place required hai."}
+    try:
+        chart = _birth_chart_from_gemstone_req(req)
+        result = _build_bracelet_recommendations(chart, req.goal)
+        result["ok"] = True
+        result["name"] = req.name.strip()
+        return result
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": f"Bracelet recommendation calculate nahi ho paayi: {exc}",
+        }
 
 
 @app.post("/api/message")
