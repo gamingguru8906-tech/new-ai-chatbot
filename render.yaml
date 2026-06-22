@@ -1,0 +1,35 @@
+# Render Blueprint — lets Render set up your service automatically.
+# After pushing to GitHub, choose "New +" > "Blueprint" and pick your repo.
+services:
+  - type: web
+    name: veshannastro-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: FREE_QUESTIONS
+        value: "3"
+      - key: PRICE_PER_QUESTION_INR
+        value: "19"
+      - key: ALLOWED_ORIGINS
+        value: https://veshannastro.co.in,https://www.veshannastro.co.in
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: BOOKING_URL
+        value: https://veshannastro.co.in
+      # The secrets below are left blank here on purpose — set them in the
+      # Render dashboard (Environment tab) so they never touch your repo:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: ADMIN_KEY
+        sync: false
