@@ -10,6 +10,9 @@ import hmac
 import importlib.util
 import json
 import os
+import time
+import urllib.parse
+import urllib.request
 import uuid
 from typing import Optional
 
@@ -50,6 +53,12 @@ ONE_QUESTION_URL = os.getenv(
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+PLACE_SEARCH_CACHE = {}
+PLACE_SEARCH_LAST_CALL = 0.0
+PLACE_SEARCH_USER_AGENT = os.getenv(
+    "PLACE_SEARCH_USER_AGENT",
+    "VeshannastroAI/1.0 (https://veshannastro.co.in)",
+)
 
 app = FastAPI(title="Veshannastro Chat")
 app.add_middleware(
@@ -154,6 +163,98 @@ def _cta_buttons():
         {"label": "Book a Full Consultation", "url": FULL_CONSULTATION_URL},
         {"label": "Ask One Question (Call)", "url": ONE_QUESTION_URL},
     ]
+
+
+@app.get("/api/places")
+def places(q: str = ""):
+    """User-triggered global place search using OSM Nominatim.
+
+    This is not live autocomplete. Results are cached and throttled because the
+    public Nominatim service is free but fair-use only.
+    """
+    global PLACE_SEARCH_LAST_CALL
+    query = " ".join((q or "").strip().split())
+    if len(query) < 3:
+        return {"ok": True, "places": [], "attribution": "OpenStreetMap contributors"}
+
+    key = query.lower()
+    cached = PLACE_SEARCH_CACHE.get(key)
+    if cached:
+        return cached
+
+    elapsed = time.monotonic() - PLACE_SEARCH_LAST_CALL
+    if elapsed < 1.05:
+        time.sleep(1.05 - elapsed)
+    PLACE_SEARCH_LAST_CALL = time.monotonic()
+
+    params = urllib.parse.urlencode(
+        {
+            "format": "jsonv2",
+            "q": query,
+            "limit": 8,
+            "addressdetails": 1,
+            "accept-language": "en",
+        }
+    )
+    request = urllib.request.Request(
+        f"https://nominatim.openstreetmap.org/search?{params}",
+        headers={"User-Agent": PLACE_SEARCH_USER_AGENT, "Referer": "https://veshannastro.co.in"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=12) as response:
+            raw = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        raise HTTPException(502, f"Place search failed: {exc}")
+
+    results = []
+    for item in raw:
+        try:
+            lat = float(item["lat"])
+            lon = float(item["lon"])
+        except Exception:
+            continue
+        tz = None
+        try:
+            from timezonefinder import TimezoneFinder
+
+            tz = TimezoneFinder().timezone_at(lat=lat, lng=lon)
+        except Exception:
+            pass
+        address = item.get("address") or {}
+        primary = (
+            address.get("city")
+            or address.get("town")
+            or address.get("village")
+            or address.get("municipality")
+            or address.get("county")
+            or item.get("name")
+            or query
+        )
+        secondary = ", ".join(
+            part
+            for part in [
+                address.get("state"),
+                address.get("country"),
+            ]
+            if part
+        )
+        label = item.get("display_name") or ", ".join(part for part in [primary, secondary] if part)
+        results.append(
+            {
+                "name": primary,
+                "label": label,
+                "state": address.get("state") or "",
+                "country": address.get("country") or "",
+                "lat": lat,
+                "lon": lon,
+                "tz": tz or "UTC",
+            }
+        )
+
+    payload = {"ok": True, "places": results, "attribution": "OpenStreetMap contributors"}
+    PLACE_SEARCH_CACHE[key] = payload
+    return payload
 
 
 @app.post("/api/start")

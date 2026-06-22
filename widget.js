@@ -29,6 +29,7 @@
     sessionId: getOrCreateSessionId(),
     mode: "closed",
     credits: readCredits(),
+    renewalEtaHours: 24,
     responseCount: 0,
     creditPlan: [],
     gemStep: 0,
@@ -148,6 +149,13 @@
     if (typeof data.credits_after === "number") state.credits = Math.max(0, data.credits_after);
     else if (typeof data.credits === "number") state.credits = Math.max(0, data.credits);
     else if (data.credit_status && typeof data.credit_status.credits === "number") state.credits = Math.max(0, data.credit_status.credits);
+    if (data.credit_status && typeof data.credit_status.renewal_eta_hours === "number") {
+      state.renewalEtaHours = data.credit_status.renewal_eta_hours;
+    } else if (typeof data.renewal_eta_hours === "number") {
+      state.renewalEtaHours = data.renewal_eta_hours;
+    } else if (!state.renewalEtaHours) {
+      state.renewalEtaHours = 24;
+    }
     saveCredits();
   }
 
@@ -233,6 +241,54 @@
     if (status) status.innerHTML = "";
   }
 
+  async function searchGlobalPlaces(query, opts) {
+    opts = opts || {};
+    var target = opts.target || state.astroData;
+    var listId = opts.listId || "mayaAstroCityList";
+    var statusId = opts.statusId || "mayaAstroCityStatus";
+    var inputId = opts.inputId || "mayaAstroInput";
+    var list = document.getElementById(listId);
+    var status = document.getElementById(statusId);
+    var q = String(query || "").trim();
+    if (!list || q.length < 3) {
+      if (status) status.innerHTML = '<div class="maya-city-unconfirmed">Type at least 3 letters, then search your place.</div>';
+      return;
+    }
+    if (status) status.innerHTML = '<div class="maya-city-confirmed">Searching worldwide places...</div>';
+    list.innerHTML = "";
+    list.classList.remove("is-open");
+    try {
+      var data = await getJson("/api/places?q=" + encodeURIComponent(q));
+      var places = data.places || [];
+      if (!places.length) {
+        if (status) status.innerHTML = '<div class="maya-city-unconfirmed">No place found. Try city + state/country, for example "Bhopal India" or "Paris France".</div>';
+        return;
+      }
+      list.innerHTML = places.map(function (place, idx) {
+        return '<button type="button" class="maya-city-option" data-place-index="' + idx + '"><strong>' + escapeHtml(place.name || place.label) + '</strong><small>' + escapeHtml(place.label || "") + '</small></button>';
+      }).join("");
+      list.classList.add("is-open");
+      list.querySelectorAll("[data-place-index]").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          var idx = Number(event.currentTarget.getAttribute("data-place-index"));
+          var place = places[idx];
+          var input = document.getElementById(inputId);
+          var label = place.label || place.name;
+          input.value = label;
+          target.birth_city = label;
+          target.birth_lat = place.lat;
+          target.birth_lon = place.lon;
+          target.birth_tz = place.tz || "UTC";
+          list.classList.remove("is-open");
+          if (status) status.innerHTML = '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div><div class="maya-field-hint">Place data by OpenStreetMap contributors.</div>';
+          input.focus();
+        });
+      });
+    } catch (error) {
+      if (status) status.innerHTML = '<div class="maya-city-unconfirmed">Place search is not available right now. Please try again in a moment.</div>';
+    }
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, function (char) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char];
@@ -278,18 +334,27 @@
   }
 
   function normaliseTime(value) {
-    var raw = String(value || "").trim();
+    var raw = String(value || "").trim().replace(/\s+/g, " ");
     if (!raw) return "";
-    var standard = raw.match(/^(\d{1,2}):(\d{2})$/);
-    if (standard) return standard[1].padStart(2, "0") + ":" + standard[2];
-    var ampm = raw.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
-    if (!ampm) return raw;
-    var hour = Number(ampm[1]);
-    var minute = ampm[2] || "00";
-    var suffix = ampm[3].toLowerCase();
-    if (suffix === "pm" && hour < 12) hour += 12;
-    if (suffix === "am" && hour === 12) hour = 0;
-    return String(hour).padStart(2, "0") + ":" + minute;
+    var standard = raw.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+    var ampm = raw.match(/^(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)$/i);
+    var hour;
+    var minute;
+    if (ampm) {
+      hour = Number(ampm[1]);
+      minute = ampm[2] ? Number(ampm[2]) : 0;
+      if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return "";
+      var suffix = ampm[3].toLowerCase();
+      if (suffix === "pm" && hour < 12) hour += 12;
+      if (suffix === "am" && hour === 12) hour = 0;
+    } else if (standard) {
+      hour = Number(standard[1]);
+      minute = standard[2] ? Number(standard[2]) : 0;
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return "";
+    } else {
+      return "";
+    }
+    return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
   }
 
   function injectStyles() {
@@ -313,6 +378,7 @@
       ".maya-field-wrap{position:relative;display:grid}.maya-field-wrap input{padding-right:56px}.maya-icon-button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(146,104,43,.24);border-radius:12px;background:#fffaf1;color:#3a2b1d;font-size:18px;font-weight:900;cursor:pointer}.maya-hidden-picker{position:absolute;right:8px;top:50%;width:40px;height:40px;opacity:0;pointer-events:none}.maya-field-hint{color:#7a6248;font-size:12px;line-height:1.4}.maya-field-error{display:none;margin-top:8px;padding:9px 11px;background:#fff0e8;color:#7b2d1c;border:1px solid rgba(123,45,28,.18);border-radius:12px;font-size:13px;line-height:1.4}.maya-field-error.is-visible{display:block}",
       ".maya-report{display:grid;gap:14px}.maya-remedy{padding:15px;background:#fffdf7;border:1px solid rgba(146,104,43,.25);border-left:5px solid #d3a83d;border-radius:16px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-remedy h4{margin:0 0 8px;color:#211a14;font:600 20px Georgia,serif}.maya-remedy p{margin:0 0 9px;color:#5d4935;font-size:13px;line-height:1.5}.maya-remedy a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;background:#251d16;color:#fff8e9;border-radius:999px;text-decoration:none;font-weight:900}.maya-disclaimer{padding:12px;background:#f7ead6;color:#5d4935;border-radius:14px;font-size:12px;line-height:1.5}.maya-whatsapp{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;background:#176f46;color:#fffaf0;border-radius:999px;text-decoration:none;font-weight:900}",
       ".maya-kundli-card{margin:0 0 14px;padding:14px;background:#fffdf7;border:1px solid rgba(146,104,43,.22);border-radius:18px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-kundli-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.maya-kundli-top h4{margin:0;color:#241c15;font:600 20px/1.1 Georgia,serif}.maya-kundli-top p{margin:4px 0 0;color:#6b5239;font-size:12.5px;line-height:1.35}.maya-kundli-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.maya-house{min-height:66px;padding:7px;background:#fbf3e7;border:1px solid rgba(146,104,43,.22);border-radius:12px;display:grid;align-content:space-between}.maya-house b{color:#8b6224;font-size:11px}.maya-house span{color:#211a14;font-size:12px;font-weight:800}.maya-house small{color:#6b5239;font-size:11px;line-height:1.25}.maya-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}.maya-chip{padding:7px 9px;background:#f7ead6;color:#4f3c2a;border:1px solid rgba(146,104,43,.18);border-radius:999px;font-size:11.5px;font-weight:800}.maya-accordion{display:grid;gap:8px;margin:0 0 14px}.maya-accordion details{background:#fffaf1;border:1px solid rgba(146,104,43,.18);border-radius:12px;padding:10px 12px}.maya-accordion summary{cursor:pointer;color:#3a2b1d;font-weight:900;font-size:13px}.maya-accordion p{margin:8px 0 0;color:#695039;font-size:12.5px;line-height:1.45}.maya-timeline{margin-top:10px;padding:10px;background:#f7ead6;border:1px solid rgba(146,104,43,.16);border-radius:12px}.maya-mini-title{font-size:11px;font-weight:900;text-transform:uppercase;color:#956b24;margin-bottom:7px}.maya-time-row{display:flex;align-items:center;gap:8px;margin-top:5px;color:#3a2b1d;font-size:12px}.maya-time-row span{width:20px;height:20px;display:grid;place-items:center;border-radius:999px;background:#251d16;color:#fff8e9;font-size:10px}.maya-credit-note{max-width:82%;margin:0 0 12px;padding:9px 12px;background:#f7ead6;border:1px solid rgba(146,104,43,.18);border-radius:12px;color:#5b452f;font-size:12.5px;font-weight:800}.maya-typing{display:inline-flex;gap:4px}.maya-typing i{width:6px;height:6px;border-radius:999px;background:#9a722d;animation:mayaBlink 1s infinite ease-in-out}.maya-typing i:nth-child(2){animation-delay:.16s}.maya-typing i:nth-child(3){animation-delay:.32s}@keyframes mayaBlink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}",
+      ".maya-kundli-svg{width:100%;max-width:430px;display:block;margin:4px auto 0;background:#fffaf1;border-radius:14px}.maya-kundli-svg rect,.maya-kundli-svg path{fill:none;stroke:#8b6224;stroke-width:1.4}.maya-kundli-label text{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#241c15;font-size:10.5px;font-weight:800}.maya-kundli-label text:nth-child(2){fill:#6b5239;font-size:9.5px;font-weight:700}",
       "@keyframes mayaStepIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.maya-step-anim{animation:mayaStepIn .38s cubic-bezier(.22,.61,.36,1)}",
       ".maya-progress span{transition:width .45s cubic-bezier(.22,.61,.36,1)}",
       ".maya-choice-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.maya-choice-card:hover{transform:translateY(-2px);box-shadow:0 22px 46px rgba(70,47,24,.16)}.maya-choice-card:active{transform:translateY(0)}",
@@ -366,7 +432,8 @@
   }
 
   function creditBarHtml() {
-    return '<div class="maya-credit-bar"><div>Available balance</div><span>' + escapeHtml(creditsText()) + '</span></div>';
+    var eta = Math.max(1, Math.round(Number(state.renewalEtaHours || 24)));
+    return '<div class="maya-credit-bar"><div>Credits left</div><span>' + escapeHtml(creditsText()) + ' · renews in ' + eta + ' hrs</span></div>';
   }
 
   function renderCreditBar() {
@@ -376,24 +443,38 @@
     else body.insertAdjacentHTML("afterbegin", creditBarHtml());
   }
 
-  function addCreditNote(before, deducted, after) {
-    if (typeof before !== "number" || typeof deducted !== "number" || typeof after !== "number") return;
-    var body = document.getElementById("mayaBody");
-    body.insertAdjacentHTML("beforeend", '<div class="maya-credit-note">Credits before: ' + before + ' | Deducted: ' + deducted + ' | Balance: ' + after + '</div>');
-    body.scrollTop = body.scrollHeight;
-  }
-
   function renderKundliCard(chart) {
     if (!chart || !chart.houses) return "";
-    var houses = [];
-    for (var i = 1; i <= 12; i += 1) {
-      var h = chart.houses[String(i)] || chart.houses[i] || {};
-      var planets = (h.planets || []).join(", ") || "Empty";
-      houses.push('<div class="maya-house"><b>H' + i + ' · ' + escapeHtml(h.sign || "") + '</b><span>' + escapeHtml(planets) + '</span><small>Sign ' + escapeHtml(String(h.sign_num || "")) + '</small></div>');
+    function houseText(num) {
+      var h = chart.houses[String(num)] || chart.houses[num] || {};
+      var planets = (h.planets || []).join(" ");
+      return { house: "H" + num, sign: h.sign || "", planets: planets || "-" };
     }
+    var coords = {
+      1: [180, 121], 2: [247, 78], 3: [316, 58], 4: [266, 180],
+      5: [316, 302], 6: [247, 282], 7: [180, 239], 8: [113, 282],
+      9: [44, 302], 10: [94, 180], 11: [44, 58], 12: [113, 78]
+    };
+    var labels = "";
+    for (var i = 1; i <= 12; i += 1) {
+      var t = houseText(i);
+      var xy = coords[i];
+      labels += '<g class="maya-kundli-label"><text x="' + xy[0] + '" y="' + (xy[1] - 12) + '">' + escapeHtml(t.house + " " + t.sign) + '</text><text x="' + xy[0] + '" y="' + (xy[1] + 5) + '">' + escapeHtml(t.planets) + '</text></g>';
+    }
+    var svg = '<svg class="maya-kundli-svg" viewBox="0 0 360 360" role="img" aria-label="North Indian style Kundli">' +
+      '<rect x="10" y="10" width="340" height="340" rx="8"></rect>' +
+      '<path d="M10 10 L180 70 L350 10 L290 180 L350 350 L180 290 L10 350 L70 180 Z"></path>' +
+      '<path d="M180 70 L290 180 L180 290 L70 180 Z"></path>' +
+      '<path d="M10 10 L70 180 L10 350"></path>' +
+      '<path d="M350 10 L290 180 L350 350"></path>' +
+      '<path d="M10 10 L180 180 L350 10"></path>' +
+      '<path d="M10 350 L180 180 L350 350"></path>' +
+      '<path d="M70 180 L180 180 L290 180"></path>' +
+      labels +
+      '</svg>';
     return '<section class="maya-kundli-card">' +
-      '<div class="maya-kundli-top"><div><h4>Your Kundli</h4><p>Sidereal Lahiri chart generated from your birth details.</p></div><div class="maya-kicker">D1 Lagna</div></div>' +
-      '<div class="maya-kundli-grid">' + houses.join("") + '</div>' +
+      '<div class="maya-kundli-top"><div><h4>North Indian Kundli</h4><p>Sidereal Lahiri D1 Lagna chart</p></div><div class="maya-kicker">Chart first</div></div>' +
+      svg +
       '<div class="maya-chip-row"><span class="maya-chip">Lagna: ' + escapeHtml(chart.lagna || "-") + '</span><span class="maya-chip">Rashi: ' + escapeHtml(chart.rashi || "-") + '</span><span class="maya-chip">Nakshatra: ' + escapeHtml(chart.nakshatra || "-") + '</span></div>' +
       '</section>';
   }
@@ -410,7 +491,7 @@
   function renderChartIntro(chart) {
     var body = document.getElementById("mayaBody");
     var html = renderKundliCard(chart);
-    if (html) body.insertAdjacentHTML("beforeend", html + renderAstroAccordions());
+    if (html) body.insertAdjacentHTML("beforeend", html);
   }
 
   function showTyping() {
@@ -458,6 +539,14 @@
       }
     }
     throw lastError || new Error("Connection issue");
+  }
+
+  async function getJson(path) {
+    var response = await fetch(apiUrl(path), { method: "GET" });
+    var text = await response.text();
+    var data = text ? JSON.parse(text) : {};
+    if (!response.ok || data.ok === false) throw new Error(data.error || data.detail || "Request failed");
+    return data;
   }
 
   async function buyCredits() {
@@ -571,15 +660,18 @@
     if (step.key === "birth_city") {
       var hasCoords = state.astroData.birth_lat !== null && state.astroData.birth_lon !== null && state.astroData.birth_city === fieldValue;
       var statusHtml = hasCoords
-        ? '<div class="maya-city-confirmed">\u2713 Exact coordinates confirmed -- Maya will use these for your chart.</div>'
-        : (fieldValue ? '<div class="maya-city-unconfirmed">Pick your city from the list for exact coordinates. Without this, Maya falls back to estimating your city, which can affect dasha and transit accuracy.</div>' : '');
+        ? '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div>'
+        : (fieldValue ? '<div class="maya-city-unconfirmed">Tap search and select the correct place for exact coordinates.</div>' : '');
       fieldHtml = [
         '<div class="maya-field"><label>Birth city</label>',
         '<div class="maya-city-wrap">',
-        '<input id="mayaAstroInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="Start typing your city...">',
+        '<div class="maya-field-wrap">',
+        '<input id="mayaAstroInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="City, state, country">',
+        '<button class="maya-icon-button" type="button" id="mayaAstroPlaceSearch" aria-label="Search place">⌕</button>',
+        '</div>',
         '<div class="maya-city-list" id="mayaAstroCityList"></div>',
         '</div>',
-        '<div class="maya-field-hint">Search and select your city so Maya can calculate your exact chart.</div>',
+        '<div class="maya-field-hint">Type your place, then tap search. Uses worldwide OpenStreetMap place search.</div>',
         '<div id="mayaAstroCityStatus">' + statusHtml + '</div>',
         '</div>'
       ].join("");
@@ -629,7 +721,15 @@
         state.astroData.birth_lat = null;
         state.astroData.birth_lon = null;
         state.astroData.birth_tz = "";
-        renderCitySuggestions(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput" });
+        var status = document.getElementById("mayaAstroCityStatus");
+        var list = document.getElementById("mayaAstroCityList");
+        if (list) {
+          list.innerHTML = "";
+          list.classList.remove("is-open");
+        }
+        if (status) status.innerHTML = input.value.trim().length >= 3
+          ? '<div class="maya-city-unconfirmed">Tap search and select your exact place.</div>'
+          : '';
       }
     });
 
@@ -658,6 +758,10 @@
       });
     }
     if (step.key === "birth_city") {
+      var placeSearch = document.getElementById("mayaAstroPlaceSearch");
+      if (placeSearch) placeSearch.addEventListener("click", function () {
+        searchGlobalPlaces(input.value, { target: state.astroData, listId: "mayaAstroCityList", statusId: "mayaAstroCityStatus", inputId: "mayaAstroInput" });
+      });
       document.addEventListener("click", function closeAstroCityList(event) {
         var list = document.getElementById("mayaAstroCityList");
         if (list && !event.target.closest(".maya-city-wrap")) list.classList.remove("is-open");
@@ -682,7 +786,28 @@
         input.focus();
         return;
       }
-      if (step.key === "tob") state.astroData.tob = normaliseTime(input.value) || "12:00";
+      if (step.key === "birth_city" && (state.astroData.birth_lat === null || state.astroData.birth_lon === null)) {
+        var cityError = document.getElementById("mayaAstroFieldError");
+        if (cityError) {
+          cityError.textContent = "Please tap search and select your exact birth place from the list.";
+          cityError.classList.add("is-visible");
+        }
+        input.focus();
+        return;
+      }
+      if (step.key === "tob") {
+        var parsedTime = normaliseTime(input.value);
+        if (!parsedTime) {
+          var timeError = document.getElementById("mayaAstroFieldError");
+          if (timeError) {
+            timeError.textContent = "Please select time using the clock icon, or type like 14:35 / 2:35 PM.";
+            timeError.classList.add("is-visible");
+          }
+          input.focus();
+          return;
+        }
+        state.astroData.tob = parsedTime;
+      }
       if (state.astroStep === astroSteps.length - 1) submitAstroSetup();
       else {
         state.astroStep += 1;
@@ -749,7 +874,6 @@
       syncCredits(data);
       renderCreditBar();
       addMessage(data.reply || data.message || data.response || "Maya is here with you. There is more beneath this pattern than it first appears, and we can explore it layer by layer.", "bot");
-      addCreditNote(data.credits_before, data.credits_deducted, data.credits_after);
       if (data.locked) {
         showUpgradePrompt();
       } else if (state.credits <= 0) {
@@ -862,15 +986,18 @@
     if (step.key === "birth_city") {
       var hasCoords = state.gemData.birth_lat !== null && state.gemData.birth_lon !== null && state.gemData.birth_city === fieldValue;
       var statusHtml = hasCoords
-        ? '<div class="maya-city-confirmed">\u2713 Exact coordinates confirmed -- Maya will use these for your chart.</div>'
-        : (fieldValue ? '<div class="maya-city-unconfirmed">Pick your city from the list for exact coordinates. Without this, Maya falls back to estimating your city, which can affect dasha and transit accuracy.</div>' : '');
+        ? '<div class="maya-city-confirmed">Exact place selected. Chart will use these coordinates.</div>'
+        : (fieldValue ? '<div class="maya-city-unconfirmed">Tap search and select the correct place for exact coordinates.</div>' : '');
       fieldHtml = [
         '<div class="maya-field"><label>Birth city</label>',
         '<div class="maya-city-wrap">',
-        '<input id="mayaGemInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="Start typing your city...">',
+        '<div class="maya-field-wrap">',
+        '<input id="mayaGemInput" type="text" autocomplete="off" value="' + escapeHtml(fieldValue) + '" placeholder="City, state, country">',
+        '<button class="maya-icon-button" type="button" id="mayaGemPlaceSearch" aria-label="Search place">⌕</button>',
+        '</div>',
         '<div class="maya-city-list" id="mayaCityList"></div>',
         '</div>',
-        '<div class="maya-field-hint">Search and select your city so Maya can calculate your exact chart.</div>',
+        '<div class="maya-field-hint">Type your place, then tap search. Uses worldwide OpenStreetMap place search.</div>',
         '<div id="mayaCityStatus">' + statusHtml + '</div>',
         '</div>'
       ].join("");
@@ -900,7 +1027,15 @@
         state.gemData.birth_lat = null;
         state.gemData.birth_lon = null;
         state.gemData.birth_tz = "";
-        renderCitySuggestions(input.value);
+        var status = document.getElementById("mayaCityStatus");
+        var list = document.getElementById("mayaCityList");
+        if (list) {
+          list.innerHTML = "";
+          list.classList.remove("is-open");
+        }
+        if (status) status.innerHTML = input.value.trim().length >= 3
+          ? '<div class="maya-city-unconfirmed">Tap search and select your exact place.</div>'
+          : '';
       }
     });
     var dateButton = document.getElementById("mayaDateButton");
@@ -928,6 +1063,10 @@
       });
     }
     if (step.key === "birth_city") {
+      var gemPlaceSearch = document.getElementById("mayaGemPlaceSearch");
+      if (gemPlaceSearch) gemPlaceSearch.addEventListener("click", function () {
+        searchGlobalPlaces(input.value, { target: state.gemData, listId: "mayaCityList", statusId: "mayaCityStatus", inputId: "mayaGemInput" });
+      });
       document.addEventListener("click", function closeCityList(event) {
         var list = document.getElementById("mayaCityList");
         if (list && !event.target.closest(".maya-city-wrap")) {
@@ -954,8 +1093,27 @@
         input.focus();
         return;
       }
+      if (step.key === "birth_city" && (state.gemData.birth_lat === null || state.gemData.birth_lon === null)) {
+        var cityError = document.getElementById("mayaFieldError");
+        if (cityError) {
+          cityError.textContent = "Please tap search and select your exact birth place from the list.";
+          cityError.classList.add("is-visible");
+        }
+        input.focus();
+        return;
+      }
       if (step.key === "tob") {
-        state.gemData.tob = normaliseTime(input.value) || "12:00";
+        var parsedTime = normaliseTime(input.value);
+        if (!parsedTime) {
+          var timeError = document.getElementById("mayaFieldError");
+          if (timeError) {
+            timeError.textContent = "Please select time using the clock icon, or type like 14:35 / 2:35 PM.";
+            timeError.classList.add("is-visible");
+          }
+          input.focus();
+          return;
+        }
+        state.gemData.tob = parsedTime;
       }
       if (state.gemStep === gemSteps.length - 1) submitGemstone();
       else {
