@@ -378,7 +378,7 @@
       ".maya-field-wrap{position:relative;display:grid}.maya-field-wrap input{padding-right:56px}.maya-icon-button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(146,104,43,.24);border-radius:12px;background:#fffaf1;color:#3a2b1d;font-size:18px;font-weight:900;cursor:pointer}.maya-hidden-picker{position:absolute;right:8px;top:50%;width:40px;height:40px;opacity:0;pointer-events:none}.maya-field-hint{color:#7a6248;font-size:12px;line-height:1.4}.maya-field-error{display:none;margin-top:8px;padding:9px 11px;background:#fff0e8;color:#7b2d1c;border:1px solid rgba(123,45,28,.18);border-radius:12px;font-size:13px;line-height:1.4}.maya-field-error.is-visible{display:block}",
       ".maya-report{display:grid;gap:14px}.maya-remedy{padding:15px;background:#fffdf7;border:1px solid rgba(146,104,43,.25);border-left:5px solid #d3a83d;border-radius:16px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-remedy h4{margin:0 0 8px;color:#211a14;font:600 20px Georgia,serif}.maya-remedy p{margin:0 0 9px;color:#5d4935;font-size:13px;line-height:1.5}.maya-remedy a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;background:#251d16;color:#fff8e9;border-radius:999px;text-decoration:none;font-weight:900}.maya-disclaimer{padding:12px;background:#f7ead6;color:#5d4935;border-radius:14px;font-size:12px;line-height:1.5}.maya-whatsapp{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;background:#176f46;color:#fffaf0;border-radius:999px;text-decoration:none;font-weight:900}",
       ".maya-kundli-card{margin:0 0 14px;padding:14px;background:#fffdf7;border:1px solid rgba(146,104,43,.22);border-radius:18px;box-shadow:0 16px 34px rgba(70,47,24,.1)}.maya-kundli-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.maya-kundli-top h4{margin:0;color:#241c15;font:600 20px/1.1 Georgia,serif}.maya-kundli-top p{margin:4px 0 0;color:#6b5239;font-size:12.5px;line-height:1.35}.maya-kundli-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.maya-house{min-height:66px;padding:7px;background:#fbf3e7;border:1px solid rgba(146,104,43,.22);border-radius:12px;display:grid;align-content:space-between}.maya-house b{color:#8b6224;font-size:11px}.maya-house span{color:#211a14;font-size:12px;font-weight:800}.maya-house small{color:#6b5239;font-size:11px;line-height:1.25}.maya-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}.maya-chip{padding:7px 9px;background:#f7ead6;color:#4f3c2a;border:1px solid rgba(146,104,43,.18);border-radius:999px;font-size:11.5px;font-weight:800}.maya-accordion{display:grid;gap:8px;margin:0 0 14px}.maya-accordion details{background:#fffaf1;border:1px solid rgba(146,104,43,.18);border-radius:12px;padding:10px 12px}.maya-accordion summary{cursor:pointer;color:#3a2b1d;font-weight:900;font-size:13px}.maya-accordion p{margin:8px 0 0;color:#695039;font-size:12.5px;line-height:1.45}.maya-timeline{margin-top:10px;padding:10px;background:#f7ead6;border:1px solid rgba(146,104,43,.16);border-radius:12px}.maya-mini-title{font-size:11px;font-weight:900;text-transform:uppercase;color:#956b24;margin-bottom:7px}.maya-time-row{display:flex;align-items:center;gap:8px;margin-top:5px;color:#3a2b1d;font-size:12px}.maya-time-row span{width:20px;height:20px;display:grid;place-items:center;border-radius:999px;background:#251d16;color:#fff8e9;font-size:10px}.maya-credit-note{max-width:82%;margin:0 0 12px;padding:9px 12px;background:#f7ead6;border:1px solid rgba(146,104,43,.18);border-radius:12px;color:#5b452f;font-size:12.5px;font-weight:800}.maya-typing{display:inline-flex;gap:4px}.maya-typing i{width:6px;height:6px;border-radius:999px;background:#9a722d;animation:mayaBlink 1s infinite ease-in-out}.maya-typing i:nth-child(2){animation-delay:.16s}.maya-typing i:nth-child(3){animation-delay:.32s}@keyframes mayaBlink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}",
-      ".maya-kundli-svg{width:100%;max-width:430px;display:block;margin:4px auto 0;background:#fffaf1;border-radius:14px}.maya-kundli-svg rect,.maya-kundli-svg path{fill:none;stroke:#8b6224;stroke-width:1.4}.maya-kundli-label text{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#241c15;font-size:10.5px;font-weight:800}.maya-kundli-label text:nth-child(2){fill:#6b5239;font-size:9.5px;font-weight:700}",
+      ".maya-kundli-card--reference{padding:0;background:transparent;border:0;box-shadow:none}.maya-kundli-svg{width:100%;max-width:512px;display:block;margin:0 auto;background:transparent}.maya-kundli-outer{fill:#fffbd4;stroke:#ffad00;stroke-width:8;stroke-linejoin:round}.maya-kundli-inner-border{fill:none;stroke:#ff1b14;stroke-width:3;stroke-linejoin:round}.maya-kundli-line{fill:none;stroke:#ff1b14;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.maya-kundli-house{font-family:Georgia,'Times New Roman',serif;text-anchor:middle;fill:#c8102e;font-size:20px;font-weight:800}.maya-kundli-sign{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#16120f;font-size:13px;font-weight:800}.maya-kundli-planets{font-family:Arial,system-ui,sans-serif;text-anchor:middle;fill:#241c15;font-size:12px;font-weight:900}",
       "@keyframes mayaStepIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.maya-step-anim{animation:mayaStepIn .38s cubic-bezier(.22,.61,.36,1)}",
       ".maya-progress span{transition:width .45s cubic-bezier(.22,.61,.36,1)}",
       ".maya-choice-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.maya-choice-card:hover{transform:translateY(-2px);box-shadow:0 22px 46px rgba(70,47,24,.16)}.maya-choice-card:active{transform:translateY(0)}",
@@ -445,37 +445,71 @@
 
   function renderKundliCard(chart) {
     if (!chart || !chart.houses) return "";
+    var romans = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII", 9: "IX", 10: "X", 11: "XI", 12: "XII" };
+    var signNums = { Ar: 1, Ta: 2, Ge: 3, Ca: 4, Le: 5, Vi: 6, Li: 7, Sc: 8, Sa: 9, Cp: 10, Aq: 11, Pi: 12 };
     function houseText(num) {
       var h = chart.houses[String(num)] || chart.houses[num] || {};
-      var planets = (h.planets || []).join(" ");
-      return { house: "H" + num, sign: h.sign || "", planets: planets || "-" };
+      var sign = h.sign || "";
+      var signNum = h.sign_num || h.signNumber || signNums[sign] || "";
+      var planets = Array.isArray(h.planets) ? h.planets : [];
+      return { sign: sign, signNum: signNum, planets: planets };
     }
-    var coords = {
-      1: [180, 121], 2: [247, 78], 3: [316, 58], 4: [266, 180],
-      5: [316, 302], 6: [247, 282], 7: [180, 239], 8: [113, 282],
-      9: [44, 302], 10: [94, 180], 11: [44, 58], 12: [113, 78]
+    function planetLines(planets, xy) {
+      if (!planets.length) return "";
+      var lines = [];
+      var current = "";
+      planets.forEach(function (planet) {
+        var next = current ? current + " " + planet : planet;
+        if (next.length > 12 && current) {
+          lines.push(current);
+          current = planet;
+        } else {
+          current = next;
+        }
+      });
+      if (current) lines.push(current);
+      return lines.slice(0, 2).map(function (line, idx) {
+        return '<text class="maya-kundli-planets" x="' + xy[0] + '" y="' + (xy[1] + idx * 14) + '">' + escapeHtml(line) + '</text>';
+      }).join("");
+    }
+    var houseCoords = {
+      1: [256, 93], 2: [147, 67], 3: [72, 122], 4: [170, 176],
+      5: [72, 258], 6: [150, 335], 7: [256, 314], 8: [362, 335],
+      9: [440, 258], 10: [342, 176], 11: [440, 122], 12: [365, 67]
+    };
+    var planetCoords = {
+      1: [256, 120], 2: [147, 88], 3: [72, 145], 4: [170, 199],
+      5: [72, 280], 6: [150, 355], 7: [256, 338], 8: [362, 355],
+      9: [440, 280], 10: [342, 199], 11: [440, 145], 12: [365, 88]
+    };
+    var signCoords = {
+      1: [256, 182], 2: [178, 103], 3: [128, 119], 4: [210, 188],
+      5: [148, 256], 6: [178, 272], 7: [256, 207], 8: [335, 272],
+      9: [363, 256], 10: [302, 188], 11: [386, 119], 12: [335, 103]
     };
     var labels = "";
     for (var i = 1; i <= 12; i += 1) {
       var t = houseText(i);
-      var xy = coords[i];
-      labels += '<g class="maya-kundli-label"><text x="' + xy[0] + '" y="' + (xy[1] - 12) + '">' + escapeHtml(t.house + " " + t.sign) + '</text><text x="' + xy[0] + '" y="' + (xy[1] + 5) + '">' + escapeHtml(t.planets) + '</text></g>';
+      var hxy = houseCoords[i];
+      var pxy = planetCoords[i];
+      var sxy = signCoords[i];
+      labels += '<text class="maya-kundli-house" x="' + hxy[0] + '" y="' + hxy[1] + '">' + romans[i] + '</text>';
+      labels += planetLines(t.planets, pxy);
+      if (t.signNum) labels += '<text class="maya-kundli-sign" x="' + sxy[0] + '" y="' + sxy[1] + '">' + escapeHtml(String(t.signNum)) + '</text>';
     }
-    var svg = '<svg class="maya-kundli-svg" viewBox="0 0 360 360" role="img" aria-label="North Indian style Kundli">' +
-      '<rect x="10" y="10" width="340" height="340" rx="8"></rect>' +
-      '<path d="M10 10 L180 70 L350 10 L290 180 L350 350 L180 290 L10 350 L70 180 Z"></path>' +
-      '<path d="M180 70 L290 180 L180 290 L70 180 Z"></path>' +
-      '<path d="M10 10 L70 180 L10 350"></path>' +
-      '<path d="M350 10 L290 180 L350 350"></path>' +
-      '<path d="M10 10 L180 180 L350 10"></path>' +
-      '<path d="M10 350 L180 180 L350 350"></path>' +
-      '<path d="M70 180 L180 180 L290 180"></path>' +
+    var outline = "M256 10 C246 36 215 27 177 29 C139 31 101 29 68 30 C50 30 45 42 37 45 C23 48 25 73 25 109 L25 151 C25 176 8 189 5 192 C8 195 25 208 25 233 L25 275 C25 311 23 336 37 339 C45 342 50 354 68 354 C101 355 139 353 177 355 C215 357 246 348 256 374 C266 348 297 357 335 355 C373 353 411 355 444 354 C462 354 467 342 475 339 C489 336 487 311 487 275 L487 233 C487 208 504 195 507 192 C504 189 487 176 487 151 L487 109 C487 73 489 48 475 45 C467 42 462 30 444 30 C411 29 373 31 335 29 C297 27 266 36 256 10 Z";
+    var svg = '<svg class="maya-kundli-svg" viewBox="0 0 512 384" role="img" aria-label="North Indian style Kundli">' +
+      '<path class="maya-kundli-outer" d="' + outline + '"></path>' +
+      '<path class="maya-kundli-inner-border" d="' + outline + '"></path>' +
+      '<path class="maya-kundli-line" d="M256 12 L128 105 L256 192 L384 105 Z"></path>' +
+      '<path class="maya-kundli-line" d="M128 105 L5 192 L128 279 L256 192 Z"></path>' +
+      '<path class="maya-kundli-line" d="M384 105 L507 192 L384 279 L256 192 Z"></path>' +
+      '<path class="maya-kundli-line" d="M128 279 L256 372 L384 279 L256 192 Z"></path>' +
+      '<path class="maya-kundli-line" d="M34 42 L128 105 M478 42 L384 105 M34 342 L128 279 M478 342 L384 279"></path>' +
       labels +
       '</svg>';
-    return '<section class="maya-kundli-card">' +
-      '<div class="maya-kundli-top"><div><h4>North Indian Kundli</h4><p>Sidereal Lahiri D1 Lagna chart</p></div><div class="maya-kicker">Chart first</div></div>' +
+    return '<section class="maya-kundli-card maya-kundli-card--reference">' +
       svg +
-      '<div class="maya-chip-row"><span class="maya-chip">Lagna: ' + escapeHtml(chart.lagna || "-") + '</span><span class="maya-chip">Rashi: ' + escapeHtml(chart.rashi || "-") + '</span><span class="maya-chip">Nakshatra: ' + escapeHtml(chart.nakshatra || "-") + '</span></div>' +
       '</section>';
   }
 
