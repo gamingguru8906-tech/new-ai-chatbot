@@ -61,7 +61,7 @@
   var astroSteps = [
     { key: "name", label: "Name", title: "What should Maya call you?", type: "text", placeholder: "Enter your full name" },
     { key: "dob", label: "Date of birth", title: "What is your date of birth?", type: "text", placeholder: "DD/MM/YYYY" },
-    { key: "tob", label: "Birth time", title: "Do you know your birth time?", type: "time", placeholder: "" },
+    { key: "tob", label: "Birth time", title: "Enter your exact birth time", type: "time", placeholder: "" },
     { key: "birth_city", label: "Birth city", title: "Which city were you born in?", type: "text", placeholder: "City, state, country" }
   ];
 
@@ -1119,7 +1119,7 @@
       '<div class="maya-step-anim">',
       '<div class="maya-kicker">Step ' + (state.astroStep + 1) + ' of ' + astroSteps.length + '</div>',
       '<div class="maya-title">' + escapeHtml(step.title) + '</div>',
-      '<p class="maya-copy">' + (step.key === "tob" ? "Kundli bina exact birth time ke calculate nahi hogi. Time unknown ho toh Gemstone Bracelet tool numerology fallback use karega." : "Maya needs this to calculate your real Vedic chart -- dasha, transits, and house placements.") + '</p>',
+      '<p class="maya-copy">' + (step.key === "tob" ? "Practical AI Astrologer ke liye exact birth time compulsory hai, kyunki Lagna, houses aur Dasha timing isi par depend karte hain." : "Maya needs this to calculate your real Vedic chart -- dasha, transits, and house placements.") + '</p>',
       '<div class="maya-progress"><span style="width:' + percent + '%"></span></div>',
       fieldHtml,
       '<div class="maya-field-error" id="mayaAstroFieldError"></div>',

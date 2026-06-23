@@ -207,15 +207,41 @@ GOAL_PLANETS = {
 }
 
 NUMEROLOGY_BRACELETS = {
-    1: {"sku": "VA-BR-CT-005", "planet": "Sun", "focus": "confidence, leadership aur self-belief"},
-    2: {"sku": "VA-BR-MN-012", "planet": "Moon", "focus": "emotional balance, intuition aur calm response"},
-    3: {"sku": "VA-BR-YA-006", "planet": "Jupiter", "focus": "growth, wisdom aur opportunity mindset"},
-    4: {"sku": "VA-BR-TP-001", "planet": "Rahu", "focus": "protection, grounding aur scattered energy ko control"},
-    5: {"sku": "VA-BR-LL-011", "planet": "Mercury", "focus": "communication, clarity aur smart decision-making"},
-    6: {"sku": "VA-BR-RQ-009", "planet": "Venus", "focus": "love, harmony aur heart healing"},
-    7: {"sku": "VA-BR-AM-002", "planet": "Ketu", "focus": "intuition, spiritual clarity aur mental quiet"},
-    8: {"sku": "VA-BR-BT-004", "planet": "Saturn", "focus": "discipline, protection aur pressure handling"},
-    9: {"sku": "VA-BR-RJ-007", "planet": "Mars", "focus": "courage, stamina aur decisive action"},
+    1: {"sku": "VA-BR-CT-005", "secondary_sku": "VA-BR-TE-008", "planet": "Sun", "focus": "confidence, leadership aur self-belief"},
+    2: {"sku": "VA-BR-MN-012", "secondary_sku": "VA-BR-RQ-009", "planet": "Moon", "focus": "emotional balance, intuition aur calm response"},
+    3: {"sku": "VA-BR-CT-005", "secondary_sku": "VA-BR-YA-006", "planet": "Jupiter", "focus": "growth, wisdom aur opportunity mindset"},
+    4: {"sku": "VA-BR-TP-001", "secondary_sku": "VA-BR-AM-002", "planet": "Rahu", "focus": "protection, grounding aur scattered energy ko control"},
+    5: {"sku": "VA-BR-GA-010", "secondary_sku": "VA-BR-LL-011", "planet": "Mercury", "focus": "communication, clarity aur smart decision-making"},
+    6: {"sku": "VA-BR-RQ-009", "secondary_sku": "VA-BR-GA-010", "planet": "Venus", "focus": "love, harmony aur heart healing"},
+    7: {"sku": "VA-BR-AM-002", "secondary_sku": "VA-BR-CQ-003", "planet": "Ketu", "focus": "intuition, spiritual clarity aur mental quiet"},
+    8: {"sku": "VA-BR-BT-004", "secondary_sku": "VA-BR-IO-014", "planet": "Saturn", "focus": "discipline, protection aur pressure handling"},
+    9: {"sku": "VA-BR-RJ-007", "secondary_sku": "VA-BR-TE-008", "planet": "Mars", "focus": "courage, stamina aur decisive action"},
+}
+
+PLANET_TO_NUMEROLOGY_NUMBER = {
+    value["planet"]: key for key, value in NUMEROLOGY_BRACELETS.items()
+}
+
+SUN_SIGNS = [
+    ((3, 21), (4, 19), "Aries", "Mesha", "Fire", "Mars"),
+    ((4, 20), (5, 20), "Taurus", "Vrishabha", "Earth", "Venus"),
+    ((5, 21), (6, 20), "Gemini", "Mithuna", "Air", "Mercury"),
+    ((6, 21), (7, 22), "Cancer", "Karka", "Water", "Moon"),
+    ((7, 23), (8, 22), "Leo", "Simha", "Fire", "Sun"),
+    ((8, 23), (9, 22), "Virgo", "Kanya", "Earth", "Mercury"),
+    ((9, 23), (10, 22), "Libra", "Tula", "Air", "Venus"),
+    ((10, 23), (11, 21), "Scorpio", "Vrischika", "Water", "Mars"),
+    ((11, 22), (12, 21), "Sagittarius", "Dhanu", "Fire", "Jupiter"),
+    ((12, 22), (1, 19), "Capricorn", "Makara", "Earth", "Saturn"),
+    ((1, 20), (2, 18), "Aquarius", "Kumbha", "Air", "Saturn"),
+    ((2, 19), (3, 20), "Pisces", "Meena", "Water", "Jupiter"),
+]
+
+ELEMENT_SUPPORT = {
+    "Fire": {"sku": "VA-BR-CQ-003", "why": "Fire sign energy ko cool, channel aur amplify karne ke liye Clear Quartz support diya gaya hai."},
+    "Earth": {"sku": "VA-BR-GA-010", "why": "Earth sign energy ko grounded growth, abundance aur opportunity ke saath align karta hai."},
+    "Air": {"sku": "VA-BR-LL-011", "why": "Air sign ke liye communication, mental clarity aur truthful expression ko sharpen karta hai."},
+    "Water": {"sku": "VA-BR-RQ-009", "why": "Water sign emotional depth ko soothe karta hai aur intuition/love energy ko balance karta hai."},
 }
 
 GOAL_NUMBERS = {
@@ -275,6 +301,38 @@ def _life_path_number(dob: str) -> int:
     return _reduce_number(sum(int(ch) for ch in f"{year:04d}{month:02d}{day:02d}"))
 
 
+def _birth_number(dob: str) -> int:
+    _year, _month, day = astrology._normalize_date(dob)
+    return _reduce_number(day)
+
+
+def _date_in_range(month: int, day: int, start: tuple[int, int], end: tuple[int, int]) -> bool:
+    md = (month, day)
+    if start <= end:
+        return start <= md <= end
+    return md >= start or md <= end
+
+
+def _sun_sign_info(dob: str) -> dict:
+    _year, month, day = astrology._normalize_date(dob)
+    for start, end, western, vedic, element, ruler in SUN_SIGNS:
+        if _date_in_range(month, day, start, end):
+            return {
+                "western": western,
+                "vedic": vedic,
+                "element": element,
+                "ruler": ruler,
+                "number": PLANET_TO_NUMEROLOGY_NUMBER.get(ruler, 1),
+            }
+    return {
+        "western": "Leo",
+        "vedic": "Simha",
+        "element": "Fire",
+        "ruler": "Sun",
+        "number": 1,
+    }
+
+
 def _name_number(name: str) -> int:
     total = 0
     for ch in name.upper():
@@ -283,9 +341,14 @@ def _name_number(name: str) -> int:
     return _reduce_number(total or 1)
 
 
-def _numerology_card(num: int, role: str, reason: str):
-    item = NUMEROLOGY_BRACELETS.get(num) or NUMEROLOGY_BRACELETS[4]
-    sku = item["sku"]
+def _bracelet_product_card(
+    sku: str,
+    role: str,
+    why: str,
+    reason: str,
+    best_period: str = "Next 45 to 90 days isko daily sankalp ke saath wear karna most practical support window hai.",
+    wearing_instruction: str = "Subah pehli baar pehnein, 11 deep breaths ke saath clear sankalp rakhein. Spiritual support hai, guaranteed result nahi.",
+):
     product = BRACELET_CATALOG[sku]
     return {
         "sku": sku,
@@ -296,11 +359,11 @@ def _numerology_card(num: int, role: str, reason: str):
         "benefits": product["benefits"],
         "tags": product["tags"],
         "stock": product["stock"],
-        "why": f"{role} number {num} {item['planet']} vibration se linked hai; isliye yeh bracelet {item['focus']} ke liye best match hai.",
-        "planetary_reason": f"Time unknown tha, isliye Kundli/Dasha calculate nahi ki gayi. DOB+name numerology fallback use hua.",
+        "why": why,
+        "planetary_reason": why,
         "dasha_gochar_reason": reason,
-        "best_period": "Next 45 to 90 days isko daily sankalp ke saath wear karna most practical support window hai.",
-        "wearing_instruction": "Subah pehli baar pehnein, 11 deep breaths ke saath clear sankalp rakhein. Spiritual support hai, guaranteed result nahi.",
+        "best_period": best_period,
+        "wearing_instruction": wearing_instruction,
         "mrp": product["mrp"],
         "price_value": product["price"],
         "discount": product["discount"],
@@ -308,37 +371,66 @@ def _numerology_card(num: int, role: str, reason: str):
         "image_url": _bracelet_image_url(sku),
         "product_url": _bracelet_checkout_url([sku]),
         "discount_note": "15% AI recommendation discount auto-applies in cart.",
+        "role": role,
     }
 
 
-def _build_numerology_bracelet_recommendations(req: GemstoneReq):
-    life = _life_path_number(req.dob)
-    name_num = _name_number(req.name)
-    ordered_numbers = [life, name_num]
-    ordered_numbers += GOAL_NUMBERS.get(req.goal or "", [])
-    selected = []
-    selected_skus = set()
-    for num in ordered_numbers:
-        item = NUMEROLOGY_BRACELETS.get(num)
-        if not item:
-            continue
-        if item["sku"] not in selected_skus:
-            selected.append(num)
-            selected_skus.add(item["sku"])
-        if len(selected) == 3:
-            break
-    if not selected:
-        selected = [4]
+def _numerology_card(num: int, role: str, reason: str):
+    item = NUMEROLOGY_BRACELETS.get(num) or NUMEROLOGY_BRACELETS[4]
+    sku = item["sku"]
+    why = f"{role} number {num} {item['planet']} vibration se linked hai; isliye yeh bracelet {item['focus']} ke liye best match hai."
+    return _bracelet_product_card(sku, role, why, reason)
 
-    roles = ["Life Path", "Name/Destiny", "Goal Support"]
-    cards = []
-    for idx, num in enumerate(selected):
-        role = roles[idx] if idx < len(roles) else "Support"
-        reason = (
-            f"{role}: number {num}. Birth time unknown hai, isliye exact Lagna, Dasha, Gochar aur Kundli promise "
-            "claim nahi kiya gaya. Yeh recommendation DOB aur name vibration se nikali gayi hai."
+
+def _build_numerology_bracelet_recommendations(req: GemstoneReq):
+    birth = _birth_number(req.dob)
+    life = _life_path_number(req.dob)
+    sun = _sun_sign_info(req.dob)
+    name_num = _name_number(req.name)
+
+    signal_planets = [
+        NUMEROLOGY_BRACELETS[birth]["planet"],
+        NUMEROLOGY_BRACELETS[life]["planet"],
+        sun["ruler"],
+    ]
+    counts = {planet: signal_planets.count(planet) for planet in signal_planets}
+    dominant_planet = max(
+        signal_planets,
+        key=lambda planet: (counts[planet], planet == signal_planets[0], planet == signal_planets[1]),
+    )
+    dominant_number = PLANET_TO_NUMEROLOGY_NUMBER.get(dominant_planet, birth)
+    if counts.get(dominant_planet, 0) < 2:
+        dominant_number = birth
+        dominant_planet = NUMEROLOGY_BRACELETS[birth]["planet"]
+
+    primary_reason = (
+        f"Birth Number {birth} ({NUMEROLOGY_BRACELETS[birth]['planet']}), "
+        f"Life Path {life} ({NUMEROLOGY_BRACELETS[life]['planet']}), aur "
+        f"Sun Sign {sun['western']} / {sun['vedic']} ({sun['element']}, ruler {sun['ruler']}) ko cross-check kiya. "
+        f"Dominant support {dominant_planet} energy par aata hai. Birth time unknown hai, isliye Lagna/Dasha/Gochar claim nahi kiya gaya."
+    )
+    cards = [_numerology_card(dominant_number, "Primary DOB fallback", primary_reason)]
+
+    element_support = ELEMENT_SUPPORT.get(sun["element"], ELEMENT_SUPPORT["Fire"])
+    secondary_sku = element_support["sku"]
+    secondary_role = f"{sun['element']} Sun Sign Support"
+    secondary_why = element_support["why"]
+    if secondary_sku == cards[0]["sku"]:
+        fallback_item = NUMEROLOGY_BRACELETS.get(birth) or NUMEROLOGY_BRACELETS[life]
+        secondary_sku = fallback_item.get("secondary_sku") or NUMEROLOGY_BRACELETS[life].get("secondary_sku")
+        secondary_role = "Secondary Birth Number Support"
+        secondary_why = (
+            f"Birth Number {birth} ke secondary bracelet mapping se yeh support liya gaya, "
+            "taaki primary bracelet ke saath balanced pairing ban sake."
         )
-        cards.append(_numerology_card(num, role, reason))
+    secondary_reason = (
+        f"Sun Sign {sun['western']} / {sun['vedic']} {sun['element']} element mein aata hai. "
+        f"{secondary_why} Yeh second bracelet primary recommendation ko balance karta hai."
+    )
+    if secondary_sku and secondary_sku != cards[0]["sku"]:
+        cards.append(_bracelet_product_card(secondary_sku, secondary_role, secondary_why, secondary_reason))
+    elif life != dominant_number:
+        cards.append(_numerology_card(life, "Life Path Support", primary_reason))
 
     recommended_skus = [card["sku"] for card in cards]
     primary = cards[0]
@@ -347,24 +439,30 @@ def _build_numerology_bracelet_recommendations(req: GemstoneReq):
         "mode": "numerology_fallback",
         "message": (
             f"Birth time missing hai, isliye Maya ne Kundli/Dasha calculate nahi ki. "
-            f"DOB se Life Path {life} aur name se Name Number {name_num} aaya. "
+            f"DOB se Birth Number {birth}, Life Path {life}, aur Sun Sign {sun['western']} / {sun['vedic']} nikla. "
             f"Final conclusion: {primary['name']} aapka strongest first bracelet hai."
         ),
         "numerology": {
+            "birth_number": birth,
             "life_path": life,
             "name_number": name_num,
-            "method": "Pythagorean 1-9 reduction from DOB digits and full name letters.",
+            "sun_sign": sun["western"],
+            "vedic_sun_sign": sun["vedic"],
+            "sun_element": sun["element"],
+            "sun_ruler": sun["ruler"],
+            "dominant_planet": dominant_planet,
+            "method": "DOB fallback: birth date reduction + full DOB life path + date-range Sun sign. Name number is retained only as a tie-break/personalisation signal.",
         },
         "recommendations": cards,
         "recommended_skus": recommended_skus,
         "checkout_url": _bracelet_checkout_url(recommended_skus),
         "discount_note": "15% AI recommendation discount cart mein automatically apply hoga.",
-        "final_remedy": "One Remedy: Roz subah bracelet pehne se pehle 11 baar apna naam dheere se bolkar ek clear sankalp rakhein: 'Main apni energy ko stable aur positive direction mein use kar raha/rahi hoon.'",
+        "final_remedy": "One Remedy: Bracelet pehne se pehle 11 deep breaths lein, phir 11 baar apna naam bolkar sankalp rakhein: 'Main apni energy ko stable, protected aur positive direction mein use kar raha/rahi hoon.'",
         "final_prediction": (
-            f"Final conclusion: {primary['name']} sabse suitable hai. Isse next 45-90 days mein "
-            "clarity, emotional steadiness aur decision energy ko support milega, especially jab aap daily sankalp ke saath use karenge."
+            f"Final conclusion: {primary['name']} primary support hai. Second bracelet pairing ke saath next 45-90 days mein "
+            "emotional steadiness, clarity aur practical decision energy ko support milne ki strong possibility hai, especially daily sankalp ke saath."
         ),
-        "disclaimer": "Birth time unknown hone par yeh Kundli/Dasha reading nahi hai; yeh DOB+name numerology based spiritual bracelet guidance hai.",
+        "disclaimer": "Birth time unknown hone par yeh Kundli/Dasha reading nahi hai; yeh DOB-based numerology + Sun sign spiritual bracelet guidance hai.",
     }
 
 
