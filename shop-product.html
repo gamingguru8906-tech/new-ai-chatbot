@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Authentic Gemstone Band — Veshannastro</title>
+<meta name="description" content="Authentic energy gemstone bracelets from Veshannastro. Free size, energised, shipped free across India. Secure prepaid checkout via Razorpay." />
+<link rel="canonical" href="https://www.veshannastro.co.in/shop-product.html" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="product" />
+<meta property="og:site_name" content="Veshannastro" />
+<meta property="og:title" content="Authentic Gemstone Band — Veshannastro" />
+<meta property="og:description" content="Authentic energy gemstone bracelets — free size, energised, shipped free across India." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<style>
+  /* ── design tokens (lifted from bracelet-shop.css / veshannastro.co.in light theme) ── */
+  :root{
+    --paper:#f8f4eb; --paper2:#fffdf8; --paper3:#fff9ef; --panel:#f8f1e7;
+    --ink:#231d19; --ink2:#5d534c; --ink3:#8a7569;
+    --maroon:#6e1423; --maroon2:#8c1c2e; --maroon-soft:rgba(110,20,35,.12);
+    --gold:#c9a84c; --gold2:#b8943a; --navy:#1f2a44;
+    --line:rgba(110,20,35,.13); --ok:#2f7d4f;
+    --shadow:0 16px 42px rgba(35,29,25,.08); --shadow-lg:0 24px 80px rgba(35,29,25,.18);
+    --serif:"Vollkorn",serif; --label:"Cinzel",serif; --body:"Jost",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  img{max-width:100%;display:block}
+  a{color:inherit}
+  ::selection{background:var(--maroon);color:#fff6e5}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ── announcement bar ── */
+  .announce{background:var(--ink);color:#f3e9d6;font-family:var(--body);font-size:.76rem;letter-spacing:.04em;
+    text-align:center;padding:.55rem 1rem;display:flex;gap:1.6rem;align-items:center;justify-content:center;flex-wrap:wrap;}
+  .announce b{color:var(--gold)}
+
+  /* ── nav ── */
+  #site-nav{position:sticky;top:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;
+    padding:0 2rem;height:58px;background:rgba(248,244,235,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);}
+  .nav-logo{font-family:var(--label);font-size:14px;letter-spacing:.22em;color:var(--maroon);text-decoration:none;}
+  .nav-logo em{font-style:italic;color:var(--gold2)}
+  .nav-links{display:flex;align-items:center;gap:1.9rem;list-style:none;}
+  .nav-links a{font-family:var(--label);font-size:9px;letter-spacing:.28em;color:var(--ink);text-decoration:none;
+    text-transform:uppercase;opacity:.7;transition:opacity .25s,color .25s;}
+  .nav-links a:hover{opacity:1;color:var(--maroon)}
+  .nav-cart{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--label);font-size:8.5px;letter-spacing:.24em;
+    text-transform:uppercase;color:#fff6e5!important;background:var(--maroon);padding:9px 16px;border-radius:3px;opacity:1!important;}
+  .nav-cart:hover{background:var(--maroon2)!important}
+  @media(max-width:760px){.nav-links li:not(.nav-cart-li){display:none}#site-nav{padding:0 1.1rem}}
+
+  /* ── breadcrumb ── */
+  .breadcrumb{max-width:1160px;margin:0 auto;padding:1.1rem 1.5rem .2rem;font-family:var(--body);font-size:.76rem;color:var(--ink3);}
+  .breadcrumb a{text-decoration:none;color:var(--ink3)}
+  .breadcrumb a:hover{color:var(--maroon)}
+  .breadcrumb span{color:var(--maroon)}
+
+  /* ── product hero ── */
+  .product{max-width:1160px;margin:0 auto;padding:1.4rem 1.5rem 3.5rem;
+    display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:3rem;align-items:start;}
+
+  /* gallery */
+  .gallery{position:sticky;top:80px}
+  .gallery-main{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+    background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.95),transparent 38%),linear-gradient(135deg,#f4e7d5,#e7d4b8 46%,#f9f1e3);
+    box-shadow:var(--shadow);}
+  .gallery-main::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(201,168,76,.25),inset 0 -60px 90px rgba(110,20,35,.06);}
+  .gallery-main img{width:100%;height:100%;object-fit:cover;transition:opacity .3s,transform .6s ease}
+  .gallery-glow{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 50% 45%,rgba(255,247,216,.35),transparent 55%);
+    mix-blend-mode:screen;animation:shimmer 6s ease-in-out infinite;}
+  @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.85}}
+  .gallery-fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:.4rem;
+    font-family:var(--serif);color:rgba(110,20,35,.4);}
+  .gallery-fallback .glyph{font-size:5rem;line-height:1}
+  .gallery-fallback small{font-family:var(--label);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase}
+  .gallery-main.no-img .gallery-fallback{display:flex}
+  .gallery-thumbs{display:flex;gap:.6rem;margin-top:.75rem;flex-wrap:wrap}
+  .gallery-thumb{width:68px;height:68px;border-radius:8px;overflow:hidden;border:1px solid var(--line);cursor:pointer;
+    background:linear-gradient(135deg,#f4e7d5,#e7d4b8);padding:0;transition:border-color .2s,transform .2s;}
+  .gallery-thumb img{width:100%;height:100%;object-fit:cover}
+  .gallery-thumb.active{border-color:var(--maroon);transform:translateY(-2px)}
+
+  /* buy box */
+  .buybox{min-width:0}
+  .eyebrow{font-family:var(--label);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--maroon);font-weight:600;}
+  .buybox h1{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;font-size:clamp(2rem,4.6vw,3rem);line-height:1.06;margin:.5rem 0 .4rem;color:var(--ink);}
+  .rating{display:flex;align-items:center;gap:.55rem;font-family:var(--body);font-size:.82rem;color:var(--ink2);margin-bottom:1rem}
+  .stars{color:var(--gold2);letter-spacing:.08em;font-size:.95rem}
+  .rating a{color:var(--ink2);text-decoration:underline;text-underline-offset:2px}
+
+  .price-row{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap;margin:.2rem 0 .1rem}
+  .price-now{font-family:var(--serif);font-weight:600;font-size:2.5rem;color:var(--maroon);line-height:1}
+  .price-mrp{font-family:var(--body);color:var(--ink3);text-decoration:line-through;font-size:1.1rem}
+  .price-off{font-family:var(--body);font-weight:600;font-size:.78rem;color:#fff6e5;background:var(--maroon);
+    border-radius:999px;padding:.28rem .55rem;letter-spacing:.02em;}
+  .tax-note{font-family:var(--body);font-size:.74rem;color:var(--ink3);margin:.3rem 0 1.1rem}
+
+  .lede{font-family:var(--body);color:var(--ink2);font-size:.96rem;margin-bottom:1.1rem}
+
+  .meta-line{font-family:var(--body);font-size:.86rem;color:var(--ink2);margin:.35rem 0;display:flex;gap:.5rem}
+  .meta-line strong{color:var(--maroon);font-weight:500;min-width:88px;display:inline-block}
+  .stock{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--body);font-size:.82rem;color:var(--ok);font-weight:500;margin:.7rem 0 1.1rem}
+  .stock::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(47,125,79,.18)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1.4rem}
+  .chips span{font-family:var(--body);font-size:.74rem;color:#6b3b31;background:#f7ebdd;border:1px solid rgba(110,20,35,.1);
+    border-radius:999px;padding:.32rem .6rem;}
+
+  /* qty + coupon */
+  .field-label{font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--maroon);
+    font-weight:600;display:block;margin-bottom:.45rem;}
+  .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff;margin-bottom:1.2rem}
+  .qty button{width:44px;height:46px;border:none;background:#fff;color:var(--ink);font-size:1.2rem;cursor:pointer;transition:background .2s}
+  .qty button:hover{background:var(--panel)}
+  .qty span{min-width:48px;text-align:center;font-family:var(--body);font-weight:600;font-size:1rem}
+
+  .coupon{display:grid;grid-template-columns:1fr auto;gap:.55rem;margin-bottom:.5rem;max-width:420px}
+  .coupon input{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:.8rem .85rem;
+    font-family:var(--body);font-size:.92rem;text-transform:uppercase;letter-spacing:.06em;}
+  .coupon input::placeholder{text-transform:none;letter-spacing:normal;color:#9a8e84}
+  .coupon button{border:1px solid var(--maroon);background:transparent;color:var(--maroon);border-radius:6px;padding:.8rem 1.1rem;
+    font-family:var(--label);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;}
+  .coupon button:hover{background:var(--maroon);color:#fff6e5}
+  .coupon-msg{font-family:var(--body);font-size:.8rem;min-height:1.25rem;margin-bottom:.7rem}
+  .coupon-msg.ok{color:var(--ok)} .coupon-msg.bad{color:var(--maroon2)}
+  .coupon-hint{font-family:var(--body);font-size:.78rem;color:var(--ink3);margin-bottom:1.2rem}
+  .coupon-hint b{color:var(--maroon)}
+  .coupon-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.7rem}
+  .coupon-action{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;text-decoration:none;
+    font-family:var(--label);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    border:1px dashed var(--gold2);background:#fff8ec;color:var(--maroon);border-radius:6px;padding:.6rem .8rem;transition:background .2s}
+  .coupon-action:hover{background:#fdefcf}
+  .coupon-action svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .offers{border-left:2px solid var(--gold);background:#fffaf0;border-radius:0 6px 6px 0;padding:.7rem .9rem;margin-bottom:1.2rem}
+  .offers p{font-family:var(--body);font-size:.78rem;color:var(--ink2);margin:.18rem 0}
+  .offers b{color:var(--maroon);font-weight:600}
+
+  .total-line{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);
+    padding-top:.9rem;margin-bottom:1.1rem;font-family:var(--body);}
+  .total-line .lbl{color:var(--ink2);font-size:.9rem}
+  .total-line .val{font-family:var(--serif);font-weight:600;font-size:1.7rem;color:var(--ink)}
+  .total-line .save{font-family:var(--body);font-size:.78rem;color:var(--ok)}
+
+  .buy-btn{width:100%;border:none;border-radius:6px;cursor:pointer;background:var(--maroon);color:#fff6e5;
+    font-family:var(--label);font-weight:500;font-size:.84rem;letter-spacing:.2em;text-transform:uppercase;
+    padding:1.15rem;transition:background .25s,transform .2s;box-shadow:0 14px 30px rgba(110,20,35,.18);}
+  .buy-btn:hover{background:var(--maroon2);transform:translateY(-1px)}
+  .buy-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+  .ship-badge{display:flex;align-items:center;gap:.6rem;margin-top:.9rem;padding:.7rem .9rem;border-radius:8px;
+    background:linear-gradient(90deg,rgba(47,125,79,.12),rgba(47,125,79,.04));border:1px solid rgba(47,125,79,.3);}
+  .ship-badge svg{width:22px;height:22px;stroke:var(--ok);fill:none;stroke-width:1.5;flex:0 0 auto}
+  .ship-badge span{font-family:var(--body);font-size:.84rem;color:#235c39}
+  .ship-badge b{color:#1c4a2e;font-weight:600}
+
+  .trust-mini{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin-top:1.1rem;font-family:var(--body);font-size:.78rem;color:var(--ink2)}
+  .trust-mini span{display:inline-flex;align-items:center;gap:.4rem}
+  .trust-mini svg{width:15px;height:15px;stroke:var(--maroon);fill:none;stroke-width:1.6}
+
+  /* ── trust strip ── */
+  .trust-strip{background:var(--paper2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .trust-strip .inner{max-width:1160px;margin:0 auto;padding:1.6rem 1.5rem;display:grid;
+    grid-template-columns:repeat(4,1fr);gap:1.4rem;text-align:center}
+  .trust-card svg{width:26px;height:26px;stroke:var(--maroon);fill:none;stroke-width:1.4;margin:0 auto .5rem}
+  .trust-card h4{font-family:var(--label);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:.2rem}
+  .trust-card p{font-family:var(--body);font-size:.78rem;color:var(--ink2)}
+
+  /* ── content sections ── */
+  .section{max-width:1000px;margin:0 auto;padding:3.4rem 1.5rem 0}
+  .section-eyebrow{font-family:var(--label);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--maroon);
+    font-weight:600;text-align:center;display:block;margin-bottom:.6rem}
+  .section h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.05;text-align:center;color:var(--ink);margin-bottom:.5rem}
+  .section h2 em{font-style:italic;color:var(--maroon)}
+  .section-sub{font-family:var(--body);color:var(--ink2);text-align:center;max-width:620px;margin:0 auto 2.2rem}
+
+  .benefit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+  .benefit{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:1.5rem 1.3rem;box-shadow:var(--shadow)}
+  .benefit .num{font-family:var(--label);font-size:.7rem;letter-spacing:.16em;color:var(--gold2);font-weight:600}
+  .benefit h3{font-family:var(--serif);font-size:1.45rem;font-weight:500;color:var(--ink);margin:.5rem 0 .4rem}
+  .benefit p{font-family:var(--body);font-size:.88rem;color:var(--ink2)}
+
+  .about{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;align-items:center;margin-top:.6rem}
+  .about-text p{font-family:var(--body);color:var(--ink2);margin-bottom:1rem;font-size:.95rem}
+  .about-img{aspect-ratio:4/5;border-radius:12px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);
+    background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.9),transparent 40%),linear-gradient(135deg,#f4e7d5,#e7d4b8 46%,#f9f1e3)}
+  .about-img img{width:100%;height:100%;object-fit:cover}
+
+  .care{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-top:.4rem}
+  .care-item{text-align:center;padding:1.2rem}
+  .care-item svg{width:30px;height:30px;stroke:var(--maroon);fill:none;stroke-width:1.3;margin:0 auto .7rem}
+  .care-item h4{font-family:var(--serif);font-size:1.25rem;font-weight:500;color:var(--ink);margin-bottom:.3rem}
+  .care-item p{font-family:var(--body);font-size:.85rem;color:var(--ink2)}
+
+  /* faq */
+  .faq{max-width:760px}
+  .faq-item{border-bottom:1px solid var(--line)}
+  .faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:1.15rem 0;
+    font-family:var(--serif);font-size:1.25rem;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:1rem}
+  .faq-q .ico{font-family:var(--body);font-size:1.5rem;color:var(--maroon);transition:transform .25s;flex:0 0 auto}
+  .faq-item.open .faq-q .ico{transform:rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .faq-a p{font-family:var(--body);color:var(--ink2);font-size:.92rem;padding:0 0 1.15rem}
+
+  /* reviews */
+  .rev-head{display:flex;align-items:center;justify-content:center;gap:1.4rem;flex-wrap:wrap;margin-bottom:2rem}
+  .rev-score{font-family:var(--serif);font-weight:600;font-size:3rem;color:var(--maroon);line-height:1}
+  .rev-head .stars{font-size:1.3rem}
+  .rev-head p{font-family:var(--body);font-size:.84rem;color:var(--ink2)}
+  .rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+  .rev{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:1.4rem 1.3rem;box-shadow:var(--shadow)}
+  .rev .stars{font-size:.9rem}
+  .rev p{font-family:var(--body);font-size:.88rem;color:var(--ink);margin:.6rem 0 .9rem;line-height:1.6}
+  .rev .who{font-family:var(--body);font-size:.8rem;color:var(--ink2);display:flex;align-items:center;gap:.5rem}
+  .rev .who b{color:var(--ink);font-weight:600}
+  .rev .verified{font-size:.7rem;color:var(--ok)}
+
+  /* ── checkout modal ── */
+  .co-modal{position:fixed;inset:0;z-index:10000;display:none;background:rgba(12,10,8,.66);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;padding:1rem}
+  .co-modal.open{display:flex}
+  .co-card{width:min(880px,100%);max-height:94vh;overflow:auto;background:var(--paper2);border-radius:12px;
+    border:1px solid rgba(201,168,76,.28);box-shadow:var(--shadow-lg)}
+  .co-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;background:#fff8ec}
+  .co-head h3{font-family:var(--serif);font-size:1.7rem;font-weight:500;color:var(--ink);margin:0}
+  .co-head p{font-family:var(--body);font-size:.84rem;color:var(--ink2);margin:.2rem 0 0}
+  .co-close{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:#43251f;
+    font-size:1.4rem;line-height:1;cursor:pointer;flex:0 0 auto}
+  .co-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(250px,.75fr);gap:1.2rem;padding:1.3rem 1.4rem}
+  .co-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem}
+  .co-field{display:flex;flex-direction:column;gap:.35rem}
+  .co-field.full{grid-column:1/-1}
+  .co-field label{font-family:var(--label);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--maroon);font-weight:600}
+  .co-field input,.co-field select,.co-field textarea{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);
+    border-radius:6px;padding:.78rem .82rem;font-family:var(--body);font-size:.92rem}
+  .co-field input:focus,.co-field select:focus,.co-field textarea:focus{outline:none;border-color:var(--maroon);box-shadow:0 0 0 2px rgba(110,20,35,.12)}
+  .co-field textarea{min-height:72px;resize:vertical}
+  .co-error{display:none;color:var(--maroon2);font-family:var(--body);font-size:.84rem;margin-top:.8rem}
+  .co-error.show{display:block}
+  .co-summary{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.1rem;height:max-content}
+  .co-summary h4{font-family:var(--serif);font-size:1.35rem;font-weight:500;margin:0 0 .9rem;color:var(--ink)}
+  .co-sum-line{display:flex;justify-content:space-between;gap:.8rem;font-family:var(--body);font-size:.86rem;color:var(--ink2);margin-bottom:.5rem}
+  .co-sum-line.grand{border-top:1px solid var(--line);padding-top:.6rem;margin-top:.6rem;font-size:1.05rem;color:var(--ink);font-weight:600}
+  .co-pay{width:100%;border:none;border-radius:6px;background:var(--maroon);color:#fff6e5;font-family:var(--label);
+    font-weight:500;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;padding:1rem;cursor:pointer;margin-top:.9rem;transition:background .2s}
+  .co-pay:hover{background:var(--maroon2)}
+  .co-pay:disabled{opacity:.55;cursor:not-allowed}
+  .co-helper{font-family:var(--body);font-size:.76rem;color:var(--ink2);line-height:1.5;margin-top:.8rem}
+
+  /* success */
+  .co-success{display:none;text-align:center;padding:2.8rem 2rem 3rem}
+  .co-success.show{display:block}
+  .co-success .tick{width:64px;height:64px;margin:0 auto 1.2rem;border-radius:50%;border:1.5px solid var(--ok);
+    display:flex;align-items:center;justify-content:center;color:var(--ok);font-size:2rem}
+  .co-success h3{font-family:var(--serif);font-size:1.9rem;color:var(--ink);margin-bottom:.5rem}
+  .co-success p{font-family:var(--body);color:var(--ink2);max-width:440px;margin:0 auto 1.2rem}
+  .co-wa{display:inline-flex;align-items:center;gap:.5rem;background:#25D366;color:#fff;text-decoration:none;
+    font-family:var(--label);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:.85rem 1.4rem;border-radius:6px}
+
+  .toast{position:fixed;left:50%;bottom:1.3rem;z-index:10030;transform:translate(-50%,20px);background:var(--ink);color:#fff8ea;
+    border:1px solid rgba(201,168,76,.32);border-radius:999px;padding:.78rem 1.1rem;font-family:var(--body);font-size:.88rem;
+    opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ── footer ── */
+  .site-footer{margin-top:4rem;background:var(--paper2);border-top:1px solid var(--line);padding:3rem 2rem 2rem;text-align:center}
+  .footer-logo{font-family:var(--serif);font-size:1.6rem;font-weight:400;letter-spacing:.1em;color:var(--ink);display:block;margin-bottom:.3rem}
+  .footer-logo em{font-style:italic;color:var(--maroon)}
+  .footer-tagline{font-family:var(--label);font-size:8px;letter-spacing:.32em;color:var(--gold2);text-transform:uppercase;display:block;margin-bottom:1.8rem}
+  .footer-rule{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 1.8rem}
+  .footer-nav{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;list-style:none;margin-bottom:1.6rem}
+  .footer-nav li{display:flex;align-items:center}
+  .footer-nav li:not(:last-child)::after{content:'·';color:var(--gold2);padding:0 .9rem;opacity:.6}
+  .footer-nav a{font-family:var(--label);font-size:8.5px;letter-spacing:.3em;color:var(--ink2);text-transform:uppercase;text-decoration:none;transition:color .3s}
+  .footer-nav a:hover{color:var(--maroon)}
+  .footer-copy{font-size:.7rem;color:var(--ink3);letter-spacing:.05em;font-family:var(--body)}
+
+  /* ── responsive ── */
+  @media(max-width:880px){
+    .product{grid-template-columns:1fr;gap:1.8rem}
+    .gallery{position:static}
+    .trust-strip .inner{grid-template-columns:repeat(2,1fr);gap:1.4rem}
+    .benefit-grid,.rev-grid,.care{grid-template-columns:1fr}
+    .about{grid-template-columns:1fr}
+    .co-body{grid-template-columns:1fr}
+  }
+  @media(max-width:520px){
+    .co-grid{grid-template-columns:1fr}
+    .announce{gap:.4rem 1rem;font-size:.7rem}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .gallery-glow,.gallery-main img,.faq-a{transition:none;animation:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="announce">
+  <span>🚚 <b>Free delivery</b> across India</span>
+  <span>🔒 Secure prepaid via <b>Razorpay</b></span>
+  <span>🎁 <b>HAPPY10</b> — 10% off on 2 bands</span>
+</div>
+
+<nav id="site-nav">
+  <a class="nav-logo" href="https://www.veshannastro.co.in/">Veshan<em>nastro</em></a>
+  <ul class="nav-links">
+    <li><a href="https://www.veshannastro.co.in/#bracelet-shop">Bracelets</a></li>
+    <li><a href="https://www.veshannastro.co.in/#guidance-paths">Consultations</a></li>
+    <li><a href="https://www.veshannastro.co.in/#astral-codex">Products</a></li>
+    <li class="nav-cart-li"><a class="nav-cart" href="#buy">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M3 4h2l2.6 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 8H7"/></svg>
+      Buy now</a></li>
+  </ul>
+</nav>
+
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <a href="https://www.veshannastro.co.in/">Home</a> /
+  <a href="https://www.veshannastro.co.in/#bracelet-shop">Gemstone Bracelets</a> /
+  <span id="bc-name">Product</span>
+</nav>
+
+<!-- ═══ PRODUCT HERO ═══ -->
+<main class="product" id="buy">
+  <!-- Gallery -->
+  <div class="gallery">
+    <div class="gallery-main" id="gallery-main">
+      <div class="gallery-glow"></div>
+      <img id="main-img" alt="" />
+      <div class="gallery-fallback"><span class="glyph">◈</span><small>Veshannastro</small></div>
+    </div>
+    <div class="gallery-thumbs" id="gallery-thumbs"></div>
+  </div>
+
+  <!-- Buy box -->
+  <div class="buybox">
+    <span class="eyebrow" id="p-eyebrow">Energy Gemstone · Veshannastro</span>
+    <h1 id="p-name">Gemstone Band</h1>
+    <div class="rating">
+      <span class="stars" id="p-stars">★★★★★</span>
+      <span id="p-rating-num">4.8</span>
+      <a href="#reviews" id="p-review-link">(read reviews)</a>
+    </div>
+
+    <div class="price-row">
+      <span class="price-now" id="p-price">₹0</span>
+      <span class="price-mrp" id="p-mrp">₹0</span>
+      <span class="price-off" id="p-off">0% OFF</span>
+    </div>
+    <p class="tax-note">Inclusive of all taxes · Launch price</p>
+
+    <p class="lede" id="p-lede">A genuine energy gemstone bracelet, finished as a comfortable free-size band.</p>
+
+    <p class="meta-line"><strong>Gemstone</strong><span id="p-gem">—</span></p>
+    <p class="meta-line"><strong>Helps with</strong><span id="p-benefits">—</span></p>
+    <p class="meta-line"><strong>Size</strong><span>Free size · fits most wrists (stretchable)</span></p>
+    <div class="stock" id="p-stock">In stock · ready to ship</div>
+
+    <div class="chips" id="p-chips"></div>
+
+    <span class="field-label">Quantity</span>
+    <div class="qty">
+      <button type="button" id="qty-dec" aria-label="Decrease quantity">−</button>
+      <span id="qty-val">1</span>
+      <button type="button" id="qty-inc" aria-label="Increase quantity">+</button>
+    </div>
+
+    <span class="field-label">Have a coupon?</span>
+    <div class="coupon">
+      <input id="coupon-input" type="text" inputmode="text" autocomplete="off" placeholder="Enter coupon code" />
+      <button type="button" id="coupon-apply">Apply</button>
+    </div>
+    <div class="coupon-msg" id="coupon-msg"></div>
+    <div class="coupon-actions">
+      <button type="button" class="coupon-action" id="make-two-btn" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Make it 2 &amp; save 10%
+      </button>
+      <a class="coupon-action" id="rec-btn" href="#" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2zM9 21h6M10 19h4"/></svg> Get a free recommendation
+      </a>
+    </div>
+    <div class="offers">
+      <p><b>WELCOME</b> — ₹50 off for new customers. Enter the code at checkout (one use per customer).</p>
+      <p><b>HAPPY10</b> — 10% off when you buy 2 or more bands.</p>
+      <p><b>NEW15</b> — 15% off, unlocked after a free AI recommendation from Maaya.</p>
+    </div>
+
+    <div class="total-line">
+      <span class="lbl">Total payable</span>
+      <span>
+        <span class="val" id="p-total">₹0</span>
+        <span class="save" id="p-save"></span>
+      </span>
+    </div>
+
+    <button class="buy-btn" id="buy-btn">Buy now · Pay securely</button>
+
+    <div class="ship-badge">
+      <svg viewBox="0 0 24 24"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M16 9h3l3 3v6h-6"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      <span><b>Free shipping on every order</b> · delivered across India</span>
+    </div>
+
+    <div class="trust-mini">
+      <span><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/></svg> 100% authentic stones</span>
+      <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M16 9h3l3 3v6h-6"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> Free shipping</span>
+      <span><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Secure Razorpay</span>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ TRUST STRIP ═══ -->
+<section class="trust-strip">
+  <div class="inner">
+    <div class="trust-card">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6-6.3 4.6L8 13.8 2 9.4h7.6z"/></svg>
+      <h4>Authentic stones</h4><p>Real, hand-picked crystals</p>
+    </div>
+    <div class="trust-card">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><circle cx="12" cy="14" r="3"/></svg>
+      <h4>Cleansed &amp; charged</h4><p>Energised before dispatch</p>
+    </div>
+    <div class="trust-card">
+      <svg viewBox="0 0 24 24"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M16 9h3l3 3v6h-6"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+      <h4>Free delivery</h4><p>Shipped across India</p>
+    </div>
+    <div class="trust-card">
+      <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      <h4>Secure payment</h4><p>Prepaid via Razorpay</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BENEFITS ═══ -->
+<section class="section">
+  <span class="section-eyebrow">Why wear it</span>
+  <h2>What this band <em>supports</em></h2>
+  <p class="section-sub">Each Veshannastro band carries a single intention. Here is what people reach for this one for.</p>
+  <div class="benefit-grid" id="benefit-grid"></div>
+</section>
+
+<!-- ═══ ABOUT ═══ -->
+<section class="section">
+  <span class="section-eyebrow">The stone</span>
+  <h2 id="about-title">About this <em>gemstone</em></h2>
+  <div class="about">
+    <div class="about-text" id="about-text"></div>
+    <div class="about-img"><img id="about-img" alt="" /></div>
+  </div>
+</section>
+
+<!-- ═══ CARE ═══ -->
+<section class="section">
+  <span class="section-eyebrow">Caring for it</span>
+  <h2>How to <em>wear &amp; care</em></h2>
+  <div class="care">
+    <div class="care-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <h4>Wear it daily</h4><p>On the left wrist to receive energy, the right to project it. Comfortable enough for all-day wear.</p>
+    </div>
+    <div class="care-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg>
+      <h4>Cleanse monthly</h4><p>Rinse under running water or leave in moonlight overnight to refresh the stone's energy.</p>
+    </div>
+    <div class="care-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M2 12h2M20 12h2M12 4V2"/><circle cx="12" cy="12" r="3"/></svg>
+      <h4>Keep it dry</h4><p>Remove before bathing or swimming. Store in the pouch it arrives in when not in use.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="section">
+  <span class="section-eyebrow">Good to know</span>
+  <h2>Common <em>questions</em></h2>
+  <div class="faq" id="faq" style="margin:0 auto"></div>
+</section>
+
+<!-- ═══ REVIEWS ═══ -->
+<section class="section" id="reviews">
+  <span class="section-eyebrow">From our customers</span>
+  <h2>What people <em>say</em></h2>
+  <div class="rev-head">
+    <span class="rev-score" id="rev-score">4.8</span>
+    <div>
+      <div class="stars">★★★★★</div>
+      <p id="rev-count">Based on verified customer reviews</p>
+    </div>
+  </div>
+  <div class="rev-grid" id="rev-grid"></div>
+</section>
+
+<!-- ═══ CHECKOUT MODAL ═══ -->
+<div class="co-modal" id="co-modal" aria-hidden="true">
+  <div class="co-card" role="dialog" aria-modal="true" aria-label="Checkout">
+    <div class="co-head">
+      <div>
+        <h3>Shipping &amp; checkout</h3>
+        <p>Prepaid order for delivery within India. We use these details only to ship and update you about your order.</p>
+      </div>
+      <button type="button" class="co-close" id="co-close" aria-label="Close checkout">&times;</button>
+    </div>
+
+    <!-- form view -->
+    <div class="co-body" id="co-body">
+      <form id="co-form" novalidate>
+        <div class="co-grid">
+          <div class="co-field"><label for="f-name">Full name</label><input id="f-name" name="name" autocomplete="name" type="text" required></div>
+          <div class="co-field"><label for="f-phone">Mobile number</label><input id="f-phone" name="phone" autocomplete="tel" type="tel" maxlength="10" required></div>
+          <div class="co-field full"><label for="f-email">Email</label><input id="f-email" name="email" autocomplete="email" type="email" required></div>
+          <div class="co-field full"><label for="f-address1">Shipping address</label><input id="f-address1" name="address1" autocomplete="address-line1" type="text" required></div>
+          <div class="co-field full"><label for="f-address2">Apartment, landmark (optional)</label><input id="f-address2" name="address2" autocomplete="address-line2" type="text"></div>
+          <div class="co-field"><label for="f-city">City</label><input id="f-city" name="city" autocomplete="address-level2" type="text" required></div>
+          <div class="co-field"><label for="f-state">State</label><select id="f-state" name="state" autocomplete="address-level1" required></select></div>
+          <div class="co-field"><label for="f-pincode">Pincode</label><input id="f-pincode" name="pincode" autocomplete="postal-code" type="text" maxlength="6" required></div>
+          <div class="co-field"><label for="f-country">Country</label><input id="f-country" name="country" type="text" value="India" readonly></div>
+          <div class="co-field full"><label for="f-notes">Special instructions (optional)</label><textarea id="f-notes" name="notes" placeholder="Anything we should know about your order"></textarea></div>
+        </div>
+        <div class="co-error" id="co-error">Please fill all required details correctly.</div>
+      </form>
+
+      <aside class="co-summary" aria-label="Order summary">
+        <h4>Order summary</h4>
+        <div id="co-sum-lines"></div>
+        <button type="button" class="co-pay" id="co-pay">Pay with Razorpay</button>
+        <p class="co-helper">You'll be taken to Razorpay's secure page to complete payment. Keep the payment ID for any support queries.</p>
+      </aside>
+    </div>
+
+    <!-- success view -->
+    <div class="co-success" id="co-success">
+      <div class="tick">✓</div>
+      <h3>Order received</h3>
+      <p id="co-success-msg">Thank you for your order. We'll confirm your payment and ship it within 1–2 working days.</p>
+      <a class="co-wa" id="co-wa" href="#" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20z"/></svg>
+        Send order details on WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="site-footer">
+  <span class="footer-logo">Veshan<em>nastro</em></span>
+  <span class="footer-tagline">Vedic Astrologer &amp; Numerologist</span>
+  <div class="footer-rule"></div>
+  <nav aria-label="Footer navigation">
+    <ul class="footer-nav">
+      <li><a href="https://www.veshannastro.co.in/">Home</a></li>
+      <li><a href="https://www.veshannastro.co.in/#bracelet-shop">Bracelets</a></li>
+      <li><a href="https://www.veshannastro.co.in/contact.html">Contact</a></li>
+      <li><a href="https://www.veshannastro.co.in/terms.html">Terms</a></li>
+      <li><a href="https://www.veshannastro.co.in/privacy-policy.html">Privacy</a></li>
+      <li><a href="https://www.veshannastro.co.in/refund-policy.html">Refund Policy</a></li>
+    </ul>
+  </nav>
+  <span class="footer-copy">&copy; 2026 Veshannastro · All rights reserved · India</span>
+</footer>
+
+<!-- Product structured data -->
+<script type="application/ld+json" id="product-jsonld"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   VESHANNASTRO — Gemstone band product + checkout
+   Payment: Razorpay Payment Links (primary) with Checkout.js fallback.
+   Coupon: HAPPY10 only (10% off).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+var CONFIG = {
+  brand: "Veshannastro",
+  currency: "INR",
+  razorpayKey: "rzp_live_T0NA0F3UpQiZxl",   // public client key (same as your other pages)
+  whatsapp: "918827684725",
+  ratingValue: "4.8",
+  reviewCount: "120",
+  // Apps Script web app that logs gemstone orders to your Google Sheet
+  orderWebhook: "https://script.google.com/macros/s/AKfycbzceyZBf_55PIJzJPb7WqmDab-rPRC74YeWprUZEaL6GHD7AuVvuC3XD0NYt5lHLg8o/exec",
+  // Where Razorpay sends the buyer back after a successful payment-link payment
+  thankYouUrl: "https://www.veshannastro.co.in/thank-you.html",
+
+  // Where "Get recommendation" sends people to unlock NEW15 (your Maaya AI recommender).
+  // It should send buyers back to a product URL with ?coupon=NEW15 (or ?rec=1) appended.
+  recommendationUrl: "https://new-ai-chatbot-bv0n.onrender.com",
+
+  // OPTIONAL — flexible Razorpay Payment Links for ANY amount (coupons, quantities).
+  // Deploy the create-payment-link endpoint (see create_payment_link.py) and put its
+  // URL here. When set, EVERY order gets a fresh exact-amount link generated server-side
+  // and the page redirects to it. Leave "" to use static links + Checkout instead.
+  createLinkEndpoint: "",
+
+  /* ─────────────────────────────────────────────────────────────────────
+     RAZORPAY PAYMENT LINKS  ← PASTE YOUR DASHBOARD LINKS HERE
+     ONE link per band, at its FULL launch price (single band, no coupon).
+     That's the only case a fixed link can cover. Every discounted or
+     multi-band order (HAPPY10 needs 2 bands, NEW15, quantity > 1) is a
+     VARIABLE amount, so it goes through the Razorpay Checkout popup, which
+     computes any total on the fly. Leave a link "" and that band's plain
+     single buy also uses Checkout — so the page works before links exist.
+     In each link's dashboard settings, set the redirect URL to thank-you.html.
+     ───────────────────────────────────────────────────────────────────── */
+  paymentLinks: {
+    "VA-BR-TP-001": "https://rzp.io/rzp/REPLACE-VA-BR-TP-001-699",
+    "VA-BR-AM-002": "https://rzp.io/rzp/REPLACE-VA-BR-AM-002-599",
+    "VA-BR-CQ-003": "https://rzp.io/rzp/REPLACE-VA-BR-CQ-003-549",
+    "VA-BR-BT-004": "https://rzp.io/rzp/REPLACE-VA-BR-BT-004-649",
+    "VA-BR-CT-005": "https://rzp.io/rzp/REPLACE-VA-BR-CT-005-699",
+    "VA-BR-YA-006": "https://rzp.io/rzp/REPLACE-VA-BR-YA-006-499",
+    "VA-BR-RJ-007": "https://rzp.io/rzp/REPLACE-VA-BR-RJ-007-499",
+    "VA-BR-TE-008": "https://rzp.io/rzp/REPLACE-VA-BR-TE-008-599",
+    "VA-BR-RQ-009": "https://rzp.io/rzp/REPLACE-VA-BR-RQ-009-549",
+    "VA-BR-GA-010": "https://rzp.io/rzp/REPLACE-VA-BR-GA-010-499",
+    "VA-BR-LL-011": "https://rzp.io/rzp/REPLACE-VA-BR-LL-011-699",
+    "VA-BR-MN-012": "https://rzp.io/rzp/REPLACE-VA-BR-MN-012-749",
+    "VA-BR-7C-013": "https://rzp.io/rzp/REPLACE-VA-BR-7C-013-599",
+    "VA-BR-IO-014": "https://rzp.io/rzp/REPLACE-VA-BR-IO-014-799"
+  }
+};
+
+/* ── Coupons ──────────────────────────────────────────────────────────────
+   HAPPY10 : 10% off, only on orders of 2+ bands (minQty 2).
+   NEW15   : 15% off, the reward for buying after a Maaya AI recommendation.
+             Locked until the buyer has a recommendation (requiresRec). If they
+             type it without one, they're shown a "Get recommendation" button.
+   ────────────────────────────────────────────────────────────────────────── */
+var COUPONS = {
+  "HAPPY10": { percent: 10, minQty: 2, note: "10% off on 2 or more bands." },
+  "NEW15":   { percent: 15, requiresRec: true, note: "15% off — your reward after a free AI recommendation." },
+  "WELCOME": { flat: 50, note: "₹50 off your order — enter it yourself at checkout." }
+};
+
+/* Product catalog (mirrors bracelet-shop.js). */
+var PRODUCTS = {
+  "VA-BR-TP-001": { name:"Triple Protection Band", mrp:999, price:699, gemstones:"Tiger Eye + Black Obsidian + Hematite", benefits:"Protection, grounding, confidence, negativity shielding", description:"A bold mixed-stone protection band designed for daily wear and grounding.", tags:["protection","career","strength","grounding"] },
+  "VA-BR-AM-002": { name:"Amethyst Band", mrp:899, price:599, gemstones:"Amethyst", benefits:"Calm mind, stress relief, intuition, spiritual growth", description:"A calming purple crystal band for peace, clarity and spiritual balance.", tags:["peace","intuition","spirituality","healing"] },
+  "VA-BR-CQ-003": { name:"Clear Quartz Band", mrp:799, price:549, gemstones:"Clear Quartz", benefits:"Energy amplification, clarity, focus, cleansing", description:"A clean transparent crystal band known as a universal energy amplifier.", tags:["clarity","focus","healing","energy"] },
+  "VA-BR-BT-004": { name:"Black Tourmaline Band", mrp:899, price:649, gemstones:"Black Tourmaline", benefits:"Protection, grounding, negativity removal, stability", description:"A deep black protection band for grounding and energetic shielding.", tags:["protection","grounding","negativity","stability"] },
+  "VA-BR-CT-005": { name:"Citrine Band", mrp:999, price:699, gemstones:"Citrine", benefits:"Wealth, abundance, confidence, success mindset", description:"A bright golden band associated with abundance, confidence and motivation.", tags:["wealth","success","confidence","manifestation"] },
+  "VA-BR-YA-006": { name:"Yellow Aventurine Band", mrp:799, price:499, gemstones:"Yellow Aventurine", benefits:"Confidence, optimism, willpower, decision-making", description:"A warm yellow band for optimism, personal power and positive action.", tags:["confidence","positivity","career","motivation"] },
+  "VA-BR-RJ-007": { name:"Red Jasper Band", mrp:799, price:499, gemstones:"Red Jasper", benefits:"Strength, stamina, courage, stability", description:"An earthy red band for stamina, courage and grounded strength.", tags:["health","strength","grounding","courage"] },
+  "VA-BR-TE-008": { name:"Tiger Eye Band", mrp:899, price:599, gemstones:"Tiger Eye", benefits:"Confidence, focus, courage, protection", description:"A glossy golden-brown band for confidence, focus and practical success.", tags:["career","success","protection","confidence"] },
+  "VA-BR-RQ-009": { name:"Rose Quartz Band", mrp:799, price:549, gemstones:"Rose Quartz", benefits:"Love, emotional healing, self-love, relationship harmony", description:"A soft pink band for emotional healing, self-love and harmony.", tags:["love","relationships","healing","peace"] },
+  "VA-BR-GA-010": { name:"Green Aventurine Band", mrp:799, price:499, gemstones:"Green Aventurine", benefits:"Luck, growth, opportunity, heart balance", description:"A soothing green band linked with luck, growth and heart-centered balance.", tags:["wealth","luck","growth","heart"] },
+  "VA-BR-LL-011": { name:"Lapis Lazuli Band", mrp:999, price:699, gemstones:"Lapis Lazuli", benefits:"Wisdom, communication, truth, self-awareness", description:"A royal blue band for wisdom, communication and inner truth.", tags:["wisdom","communication","study","intuition"] },
+  "VA-BR-MN-012": { name:"Moonstone Band", mrp:1099, price:749, gemstones:"White / Rainbow Moonstone", benefits:"Emotional balance, intuition, feminine energy, calmness", description:"A gentle luminous band associated with emotional balance and intuition.", tags:["moon","intuition","peace","emotional healing"] },
+  "VA-BR-7C-013": { name:"7 Chakra Band", mrp:899, price:599, gemstones:"7 Chakra mixed gemstones", benefits:"Chakra balance, energy alignment, positivity, overall wellness", description:"A multi-colour chakra band designed for energetic balance and alignment.", tags:["chakra","healing","balance","spirituality"] },
+  "VA-BR-IO-014": { name:"Iolite Band", mrp:1099, price:799, gemstones:"Iolite", benefits:"Intuition, vision, inner guidance, mental clarity", description:"A deep blue-grey band for intuition, vision and inner direction.", tags:["intuition","clarity","spirituality","focus"] }
+};
+
+var DEFAULT_SKU = "VA-BR-GA-010";
+var IMG_EXT = ["webp","jpg","jpeg","png"];
+
+/* ---------- generic editorial sections built from product data ---------- */
+function aboutCopy(p){
+  return [
+    p.name + " is a free-size energy band made with " + p.gemstones.toLowerCase() + ". It's finished on a comfortable stretch cord so it slips on easily and sits well on most wrists, with no clasp to fuss over.",
+    "People keep this one close for " + p.benefits.toLowerCase() + ". Wear it as a daily reminder of the intention you're holding — the stone does its quiet work while you get on with your day.",
+    "Every band is cleansed and energised before it's packed, and arrives in a small pouch ready to wear or gift."
+  ];
+}
+function benefitPoints(p){
+  var parts = p.benefits.split(",").map(function(s){return s.trim();}).filter(Boolean).slice(0,3);
+  var blurbs = {
+    Protection:"A daily shield against draining energy and negativity around you.",
+    Grounding:"Helps you feel steady, present and harder to knock off balance.",
+    Confidence:"Backs you when you need to show up, speak up or take the lead.",
+    Calm:"Softens a busy mind so rest and clear thinking come easier.",
+    "Calm mind":"Softens a busy mind so rest and clear thinking come easier.",
+    Wealth:"Keeps an abundance mindset close while you do the work.",
+    Luck:"Invites fresh opportunity and lucky openings your way.",
+    Love:"Opens the heart to give and receive warmth more freely.",
+    Intuition:"Sharpens your inner read on people and decisions.",
+    Clarity:"Cuts through mental fog so the next step feels obvious.",
+    Focus:"Holds your attention on what actually matters today.",
+    Healing:"Supports gentle emotional repair and everyday wellbeing.",
+    Growth:"Encourages steady, heart-led progress in life and work.",
+    Strength:"Tops up stamina and courage when energy runs low.",
+    Stability:"Brings a settled, dependable footing to busy days.",
+    Peace:"Carries a calmer, quieter tone into your daily routine.",
+    Wisdom:"Encourages clear thinking and honest self-awareness.",
+    Vision:"Helps you see the bigger picture and your direction in it."
+  };
+  return parts.map(function(label){
+    var key = Object.keys(blurbs).find(function(k){return label.toLowerCase().indexOf(k.toLowerCase())===0;});
+    return { title:label.charAt(0).toUpperCase()+label.slice(1), text:(key?blurbs[key]:"A steady daily support as you hold this intention.") };
+  });
+}
+function faqList(p){
+  return [
+    { q:"What size is this band?", a:"It's free size. The band is made on a strong stretch cord that comfortably fits most adult wrists — no measuring or clasp needed." },
+    { q:"Are the stones genuine?", a:"Yes. We use real, hand-picked "+p.gemstones.toLowerCase()+". Natural stones vary slightly in colour and pattern, so your band will be one of a kind." },
+    { q:"Is the band energised?", a:"Every band is cleansed and energised before dispatch, then packed in a pouch so it reaches you ready to wear." },
+    { q:"How is it delivered and how long does it take?", a:"We ship free across India, usually dispatched within 1–2 working days. Delivery typically takes 4–7 days depending on your location." },
+    { q:"How do I pay?", a:"Orders are prepaid through Razorpay — UPI, cards and net-banking are all accepted on the secure payment page." },
+    { q:"Can I return it?", a:"Please see our Refund & Cancellation Policy for the current return window and process. Reach us on WhatsApp if anything arrives damaged." }
+  ];
+}
+/* Sample reviews — replace text/names with your real verified reviews. */
+var SAMPLE_REVIEWS = [
+  { name:"Aishwarya R.", text:"Lovely band, looks even better in person and the stones feel real. Came nicely packed in a pouch.", stars:5 },
+  { name:"Karan M.", text:"Wearing it daily for a few weeks now. Comfortable, doesn't slip, and delivery was quick.", stars:5 },
+  { name:"Sneha P.", text:"Bought it for the intention behind it and I'm happy with the quality for the price. Would order again.", stars:4 }
+];
+
+/* ---------- state ---------- */
+var product, sku, qty = 1, coupon = null, recUnlocked = false;
+var $ = function(id){ return document.getElementById(id); };
+function money(n){ return "₹" + Number(n||0).toLocaleString("en-IN"); }
+function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+
+/* Is the currently-applied coupon valid right now? Returns {discount, lapse?} */
+function couponState(){
+  if(!coupon || !COUPONS[coupon]) return { discount:0 };
+  var c = COUPONS[coupon];
+  if(c.minQty && qty < c.minQty)
+    return { discount:0, lapse:"HAPPY10 needs " + c.minQty + " bands — add one more to keep 10% off." };
+  if(c.requiresRec && !recUnlocked)
+    return { discount:0, lapse:"NEW15 unlocks after a free AI recommendation." };
+  var base = product.price * qty;
+  var d = c.flat ? Math.min(c.flat, base) : Math.round(base * c.percent / 100);
+  return { discount: d };
+}
+function couponLabel(code){
+  var c = COUPONS[code];
+  return c.flat ? ("₹" + c.flat + " off") : (c.percent + "% off");
+}
+function discount(){ return couponState().discount; }
+function total(){ return Math.max(0, product.price*qty - discount()); }
+
+/* ---------- init ---------- */
+function init(){
+  sku = new URLSearchParams(location.search).get("sku") || DEFAULT_SKU;
+  product = PRODUCTS[sku] || PRODUCTS[DEFAULT_SKU];
+  if(!PRODUCTS[sku]) sku = DEFAULT_SKU;
+
+  document.title = product.name + " — Veshannastro";
+  $("bc-name").textContent = product.name;
+  $("p-name").textContent = product.name;
+  $("p-eyebrow").textContent = "Energy Gemstone · Veshannastro";
+  $("p-lede").textContent = product.description;
+  $("p-gem").textContent = product.gemstones;
+  $("p-benefits").textContent = product.benefits;
+  $("p-price").textContent = money(product.price);
+  $("p-mrp").textContent = money(product.mrp);
+  $("p-off").textContent = Math.round((1 - product.price/product.mrp)*100) + "% OFF";
+  $("p-rating-num").textContent = CONFIG.ratingValue;
+  $("rev-score").textContent = CONFIG.ratingValue;
+  $("rev-count").textContent = "Based on " + CONFIG.reviewCount + "+ verified customer reviews";
+  $("p-review-link").textContent = "(" + CONFIG.reviewCount + "+ reviews)";
+
+  $("p-chips").innerHTML = product.tags.map(function(t){ return "<span>"+esc(t)+"</span>"; }).join("");
+
+  // ── Recommendation unlock for NEW15 ──
+  var params = new URLSearchParams(location.search);
+  var urlCoupon = (params.get("coupon") || "").toUpperCase();
+  recUnlocked = params.get("rec") === "1" || urlCoupon === "NEW15" ||
+                params.has("maya_bundle") || sessionStorage.getItem("va_rec_unlocked") === "1";
+  if(recUnlocked){ try{ sessionStorage.setItem("va_rec_unlocked", "1"); }catch(e){} }
+  // Auto-apply NEW15 if the buyer arrived straight from the recommender
+  if(recUnlocked && (urlCoupon === "NEW15" || params.has("maya_bundle"))) coupon = "NEW15";
+  if(coupon){ var ci = $("coupon-input"); if(ci) ci.value = coupon; }
+
+  setupGallery();
+  buildStateSelect();
+  buildBenefits();
+  buildAbout();
+  buildFaq();
+  buildReviews();
+  injectJsonLd();
+  renderTotals();
+  bind();
+}
+
+/* gallery: try sku, sku-2, sku-3, sku-4; show thumbs only for images that load */
+function setupGallery(){
+  var base = "images/bracelets/";
+  var candidates = [sku, sku+"-2", sku+"-3", sku+"-4"];
+  var mainEl = $("main-img"), wrap = $("gallery-main"), thumbs = $("gallery-thumbs");
+  var loaded = [];
+  var firstSet = false;
+
+  candidates.forEach(function(name){
+    tryLoad(base+name, 0);
+    function tryLoad(b, i){
+      if(i >= IMG_EXT.length) return;
+      var test = new Image();
+      test.onload = function(){
+        loaded.push(test.src);
+        if(!firstSet){ firstSet = true; mainEl.src = test.src; mainEl.alt = product.name; wrap.classList.remove("no-img"); }
+        addThumb(test.src);
+      };
+      test.onerror = function(){ tryLoad(b, i+1); };
+      test.src = b + "." + IMG_EXT[i];
+    }
+  });
+
+  // if nothing loads, show the glyph fallback
+  setTimeout(function(){ if(!firstSet) wrap.classList.add("no-img"); }, 1200);
+
+  function addThumb(src){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "gallery-thumb" + (thumbs.children.length===0?" active":"");
+    b.innerHTML = '<img src="'+src+'" alt="">';
+    b.addEventListener("click", function(){
+      mainEl.src = src;
+      [].forEach.call(thumbs.children, function(c){ c.classList.remove("active"); });
+      b.classList.add("active");
+    });
+    thumbs.appendChild(b);
+  }
+}
+
+function buildStateSelect(){
+  var states = ["","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
+  $("f-state").innerHTML = states.map(function(s){ return '<option value="'+esc(s)+'">'+(s||"Select state")+'</option>'; }).join("");
+}
+
+function buildBenefits(){
+  $("benefit-grid").innerHTML = benefitPoints(product).map(function(b, i){
+    return '<div class="benefit"><span class="num">0'+(i+1)+'</span><h3>'+esc(b.title)+'</h3><p>'+esc(b.text)+'</p></div>';
+  }).join("");
+}
+
+function buildAbout(){
+  $("about-title").innerHTML = "About " + esc(product.gemstones.split(" ")[0]) + " <em>" + esc(product.gemstones.split(" ").slice(1).join(" ")||"") + "</em>";
+  $("about-text").innerHTML = aboutCopy(product).map(function(t){ return "<p>"+esc(t)+"</p>"; }).join("");
+  var ai = $("about-img");
+  ai.src = "images/bracelets/"+sku+"."+IMG_EXT[0];
+  ai.alt = product.name;
+  ai.onerror = function(){ this.style.display="none"; };
+}
+
+function buildFaq(){
+  $("faq").innerHTML = faqList(product).map(function(f){
+    return '<div class="faq-item"><button type="button" class="faq-q">'+esc(f.q)+'<span class="ico">+</span></button><div class="faq-a"><p>'+esc(f.a)+'</p></div></div>';
+  }).join("");
+  [].forEach.call(document.querySelectorAll(".faq-q"), function(btn){
+    btn.addEventListener("click", function(){
+      var item = btn.parentElement, ans = item.querySelector(".faq-a");
+      var open = item.classList.toggle("open");
+      ans.style.maxHeight = open ? ans.scrollHeight + "px" : 0;
+    });
+  });
+}
+
+function buildReviews(){
+  $("rev-grid").innerHTML = SAMPLE_REVIEWS.map(function(r){
+    var stars = "★★★★★".slice(0, r.stars) + "☆☆☆☆☆".slice(0, 5-r.stars);
+    return '<div class="rev"><div class="stars">'+stars+'</div><p>'+esc(r.text)+'</p>'+
+      '<div class="who"><b>'+esc(r.name)+'</b><span class="verified">✓ Verified</span></div></div>';
+  }).join("");
+}
+
+function injectJsonLd(){
+  var data = {
+    "@context":"https://schema.org","@type":"Product",
+    "name":product.name,
+    "description":product.description,
+    "sku":sku,
+    "brand":{"@type":"Brand","name":"Veshannastro"},
+    "offers":{"@type":"Offer","priceCurrency":"INR","price":String(product.price),
+      "availability":"https://schema.org/InStock","url":location.href},
+    "aggregateRating":{"@type":"AggregateRating","ratingValue":CONFIG.ratingValue,"reviewCount":CONFIG.reviewCount}
+  };
+  $("product-jsonld").textContent = JSON.stringify(data);
+}
+
+/* ---------- totals & coupon ---------- */
+function renderTotals(){
+  $("qty-val").textContent = qty;
+  $("p-total").textContent = money(total());
+  var d = discount();
+  $("p-save").textContent = d > 0 ? "you save " + money(d) : "";
+  // if an applied coupon has lapsed (e.g. qty dropped below 2), surface it
+  if(coupon){
+    var st = couponState();
+    if(st.lapse) setCouponMsg(st.lapse, "bad");
+    else setCouponMsg(coupon + " applied — " + couponLabel(coupon) + ".", "ok");
+  }
+  renderSummary();
+}
+
+function setCouponMsg(text, kind){
+  var msg = $("coupon-msg");
+  msg.className = "coupon-msg" + (kind ? " " + kind : "");
+  msg.textContent = text || "";
+}
+function showRecButton(show){
+  $("rec-btn").style.display = show ? "inline-flex" : "none";
+}
+
+function renderSummary(){
+  var lines = [
+    '<div class="co-sum-line"><span>'+esc(product.name)+' × '+qty+'</span><strong>'+money(product.price*qty)+'</strong></div>'
+  ];
+  if(discount() > 0) lines.push('<div class="co-sum-line"><span>Coupon ('+coupon+')</span><strong>− '+money(discount())+'</strong></div>');
+  lines.push('<div class="co-sum-line"><span>Shipping</span><strong>Free</strong></div>');
+  lines.push('<div class="co-sum-line grand"><span>Total</span><strong>'+money(total())+'</strong></div>');
+  $("co-sum-lines").innerHTML = lines.join("");
+  $("co-pay").textContent = "Pay " + money(total()) + " with Razorpay";
+}
+
+function applyCoupon(){
+  var code = ($("coupon-input").value || "").trim().toUpperCase();
+  showRecButton(false);
+
+  if(!code){ coupon=null; setCouponMsg("Enter a coupon code.", "bad"); renderTotals(); return; }
+  if(!COUPONS[code]){ coupon=null; setCouponMsg("That coupon isn't valid.", "bad"); renderTotals(); return; }
+
+  var c = COUPONS[code];
+
+  // HAPPY10 — only on 2+ bands
+  if(c.minQty && qty < c.minQty){
+    coupon=null;
+    setCouponMsg(code + " applies on " + c.minQty + " or more bands. Tap “Make it 2” to unlock 10% off.", "bad");
+    showMakeTwo(true);
+    renderSummary();
+    return;
+  }
+  // NEW15 — locked until the buyer has an AI recommendation
+  if(c.requiresRec && !recUnlocked){
+    coupon=null;
+    setCouponMsg(code + " isn't applicable yet — it's our reward for buying after a free AI recommendation.", "bad");
+    showRecButton(true);
+    showMakeTwo(false);
+    renderSummary();
+    return;
+  }
+
+  coupon = code;
+  $("coupon-input").value = code;
+  showMakeTwo(false);
+  setCouponMsg(code + " applied — " + couponLabel(code) + ".", "ok");
+  renderTotals();
+}
+
+function showMakeTwo(show){
+  var b = $("make-two-btn");
+  if(b) b.style.display = show ? "inline-flex" : "none";
+}
+
+/* ---------- checkout ---------- */
+function openCheckout(){
+  renderSummary();
+  $("co-body").style.display = "grid";
+  $("co-success").classList.remove("show");
+  $("co-modal").classList.add("open");
+  $("co-modal").setAttribute("aria-hidden","false");
+}
+function closeCheckout(){
+  $("co-modal").classList.remove("open");
+  $("co-modal").setAttribute("aria-hidden","true");
+}
+
+function val(id){ var el=$(id); return el?String(el.value||"").trim():""; }
+function customer(){
+  return { name:val("f-name"), phone:val("f-phone"), email:val("f-email"),
+    address1:val("f-address1"), address2:val("f-address2"), city:val("f-city"),
+    state:val("f-state"), pincode:val("f-pincode"), country:"India", notes:val("f-notes") };
+}
+function validate(){
+  var ok = true;
+  var req = ["f-name","f-phone","f-email","f-address1","f-city","f-state","f-pincode"];
+  req.forEach(function(id){
+    var el = $(id), v = el ? String(el.value||"").trim() : "";
+    var valid = !!v;
+    if(id==="f-phone") valid = /^[6-9]\d{9}$/.test(v);
+    if(id==="f-pincode") valid = /^\d{6}$/.test(v);
+    if(id==="f-email") valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+    if(el) el.style.borderColor = valid ? "" : "var(--maroon2)";
+    if(!valid) ok = false;
+  });
+  $("co-error").classList.toggle("show", !ok);
+  return ok;
+}
+
+function buildOrder(c, paymentId, status){
+  return {
+    timestamp:new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}),
+    order_id:"VA-BR-"+Date.now(),
+    category:"Product Store", source:"Product Page Checkout",
+    payment_status:status, payment_id:paymentId||"", payment_method:"Razorpay prepaid",
+    currency:"INR", customer:c,
+    items:[{ sku:sku, name:product.name, product_type:"Bracelet", quantity:qty,
+      option:"Free size", unit_price:product.price, line_total:product.price*qty,
+      gemstones:product.gemstones, benefits:product.benefits }],
+    item_summary:product.name+" × "+qty+" (Free size)",
+    subtotal:product.price*qty, coupon:coupon||"", discount:discount(), total:total(),
+    shipping_country:"India"
+  };
+}
+
+function logOrder(order){
+  try{
+    fetch(CONFIG.orderWebhook, { method:"POST", body:JSON.stringify(order), mode:"no-cors" });
+  }catch(e){ console.warn("Order log failed:", e); }
+  try{ sessionStorage.setItem("va_last_order", JSON.stringify(order)); }catch(e){}
+}
+
+function waLink(order){
+  var msg = [
+    "Hi Veshannastro, I've placed an order for a gemstone band.","",
+    "Order ID: "+order.order_id,
+    order.payment_id ? "Payment ID: "+order.payment_id : "",
+    "Item: "+order.item_summary,
+    "Total: "+money(order.total),
+    "Name: "+order.customer.name,
+    "Address: "+order.customer.address1+", "+order.customer.city+", "+order.customer.state+" - "+order.customer.pincode
+  ].filter(Boolean).join("\n");
+  return "https://wa.me/"+CONFIG.whatsapp+"?text="+encodeURIComponent(msg);
+}
+
+function payNow(){
+  if(!validate()) return;
+  var c = customer();
+
+  /* ── BEST PATH: flexible dynamic Payment Link (any amount) via your backend ── */
+  if(CONFIG.createLinkEndpoint){
+    var dynOrder = buildOrder(c, "", "Pending payment");
+    logOrder(dynOrder);
+    var payBtn = $("co-pay"); payBtn.disabled = true; payBtn.textContent = "Creating secure link…";
+    fetch(CONFIG.createLinkEndpoint, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        amount: total(),            // rupees; backend re-checks this when the price guard is on
+        order_id: dynOrder.order_id,
+        description: product.name + " × " + qty,
+        customer: { name:c.name, email:c.email, contact:"+91"+c.phone },
+        notes: { sku:sku, qty:String(qty), coupon:coupon||"" },
+        callback_url: CONFIG.thankYouUrl
+      })
+    })
+    .then(function(r){ return r.json().then(function(d){ return { status:r.status, data:d }; }); })
+    .then(function(res){
+      if(res.status === 409 && res.data && res.data.error === "welcome_used"){
+        coupon = null; $("coupon-input").value = "";
+        payBtn.disabled = false; renderTotals();
+        setCouponMsg(res.data.message || "WELCOME has already been used.", "bad");
+        alert((res.data.message || "WELCOME has already been used.") + " Your order total has been updated — tap Pay again.");
+        return;
+      }
+      if(res.data && res.data.short_url){ window.location.href = res.data.short_url; return; }
+      throw new Error("no link");
+    })
+    .catch(function(){
+      payBtn.disabled = false; renderSummary();
+      alert("Couldn't create the payment link. Please try again, or contact us on WhatsApp.");
+    });
+    return;
+  }
+
+  // A fixed payment link only fits the one case it was created for:
+  // a single band at full price, no coupon. Everything else is a variable
+  // amount and goes through Checkout.
+  var wantedLink = (qty === 1 && !coupon) ? (CONFIG.paymentLinks[sku] || "") : "";
+  var hasRealLink = wantedLink && wantedLink.indexOf("REPLACE") === -1;
+
+  /* ── PRIMARY PATH: Razorpay Payment Link (fixed amount, qty 1) ── */
+  if(hasRealLink){
+    var order = buildOrder(c, "", "Pending payment");
+    logOrder(order);                     // capture address before we leave the page
+    var sep = wantedLink.indexOf("?") === -1 ? "?" : "&";
+    // pass buyer info + callback to Razorpay's hosted link
+    var url = wantedLink + sep +
+      "prefill[name]="    + encodeURIComponent(c.name) +
+      "&prefill[email]="  + encodeURIComponent(c.email) +
+      "&prefill[contact]="+ encodeURIComponent("+91"+c.phone) +
+      "&callback_url="    + encodeURIComponent(CONFIG.thankYouUrl);
+    window.location.href = url;
+    return;
+  }
+
+  /* ── FALLBACK PATH: Razorpay Checkout (any amount / qty>1 / link not set) ── */
+  if(location.protocol === "file:"){
+    alert("Payment can't run from a local file. Open the live https site to pay.");
+    return;
+  }
+  if(typeof Razorpay === "undefined"){
+    // last resort: let them complete over WhatsApp
+    var o = buildOrder(c, "", "Pending payment");
+    logOrder(o);
+    showSuccess(o, "Payment couldn't load here. Tap below to send your order on WhatsApp and we'll share a secure payment link.");
+    return;
+  }
+
+  var btn = $("co-pay"); btn.disabled = true; btn.textContent = "Opening Razorpay…";
+  try{
+    var rzp = new Razorpay({
+      key:CONFIG.razorpayKey, amount:total()*100, currency:CONFIG.currency,
+      name:CONFIG.brand, description:product.name+" × "+qty,
+      prefill:{ name:c.name, email:c.email, contact:"+91"+c.phone },
+      notes:{ category:"Gemstone Bracelet", sku:sku, coupon:coupon||"", qty:String(qty) },
+      theme:{ color:"#6E1423" },
+      modal:{ ondismiss:function(){ btn.disabled=false; renderSummary(); } },
+      handler:function(resp){
+        var order = buildOrder(c, resp.razorpay_payment_id, "Paid");
+        logOrder(order);
+        try{ fbq("track","Purchase",{value:total(),currency:"INR"}); }catch(e){}
+        showSuccess(order, "Thank you for your order. We'll ship it within 1–2 working days. A copy of these details is below.");
+      }
+    });
+    try{ fbq("track","InitiateCheckout",{value:total(),currency:"INR"}); }catch(e){}
+    rzp.on("payment.failed", function(r){
+      btn.disabled=false; renderSummary();
+      alert("Payment failed: " + ((r&&r.error&&r.error.description)||"please try again."));
+    });
+    rzp.open();
+  }catch(e){
+    btn.disabled=false; renderSummary();
+    alert("Could not open Razorpay: " + e.message);
+  }
+}
+
+function showSuccess(order, msg){
+  $("co-body").style.display = "none";
+  $("co-success-msg").textContent = msg;
+  $("co-wa").href = waLink(order);
+  $("co-success").classList.add("show");
+}
+
+/* ---------- bind ---------- */
+function onQtyChange(){
+  // If HAPPY10 was attempted but blocked by the 2-band rule, auto-apply it once eligible.
+  if(qty >= 2 && !coupon && ($("coupon-input").value||"").trim().toUpperCase() === "HAPPY10"){
+    coupon = "HAPPY10"; showMakeTwo(false);
+  }
+  renderTotals();
+}
+function bind(){
+  $("qty-dec").addEventListener("click", function(){ if(qty>1){ qty--; onQtyChange(); } });
+  $("qty-inc").addEventListener("click", function(){ if(qty<10){ qty++; onQtyChange(); } });
+  $("coupon-apply").addEventListener("click", applyCoupon);
+  $("coupon-input").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); applyCoupon(); } });
+  $("make-two-btn").addEventListener("click", function(){ qty = Math.max(2, qty); $("coupon-input").value = "HAPPY10"; coupon = null; applyCoupon(); });
+  $("rec-btn").setAttribute("href", CONFIG.recommendationUrl);
+  $("buy-btn").addEventListener("click", openCheckout);
+  $("co-close").addEventListener("click", closeCheckout);
+  $("co-modal").addEventListener("click", function(e){ if(e.target===$("co-modal")) closeCheckout(); });
+  $("co-pay").addEventListener("click", payNow);
+  ["f-phone","f-pincode"].forEach(function(id){
+    $(id).addEventListener("input", function(){ this.value = this.value.replace(/\D/g,""); });
+  });
+}
+
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+else init();
+</script>
+</body>
+</html>
