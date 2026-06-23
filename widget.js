@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var WIDGET_VERSION = "maaya-oracle-2026-06-23-v2";
+  var WIDGET_VERSION = "maaya-oracle-2026-06-23-v3-compact-gemstone";
   if (window.__VESHANN_MAYA_CREDITS_WIDGET__ === WIDGET_VERSION) return;
   if (window.__VESHANN_MAYA_CREDITS_WIDGET__) {
     try {
@@ -744,6 +744,26 @@
 #mayaCreditsWidget .maya-product-media{background:linear-gradient(135deg,#1A1028 0%,#0E0D1E 100%)}
 #mayaCreditsWidget .maya-product-badge{border-radius:4px;background:var(--maya-navy);font-family:var(--maya-mono);font-size:9px;font-weight:500}
 #mayaCreditsWidget .maya-product-body{font-family:var(--maya-ui)}
+#mayaCreditsWidget .maya-product-card{display:grid;grid-template-columns:96px minmax(0,1fr);min-height:128px}
+#mayaCreditsWidget .maya-product-media{width:96px;min-height:100%;aspect-ratio:auto}
+#mayaCreditsWidget .maya-product-media img{width:96px;height:100%;max-height:156px;object-fit:cover}
+#mayaCreditsWidget .maya-product-body{padding:10px 12px;gap:5px;min-width:0}
+#mayaCreditsWidget .maya-product-role{display:inline-flex;width:max-content;max-width:100%;padding:3px 7px;border-radius:3px;background:rgba(201,160,80,.14);color:var(--maya-gold-dim);font-family:var(--maya-mono);font-size:8.5px;letter-spacing:1px;text-transform:uppercase}
+#mayaCreditsWidget .maya-product-sku{font-size:8.5px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mayaCreditsWidget .maya-product-card h4{margin:0;font-size:15px!important;line-height:1.15}
+#mayaCreditsWidget .maya-product-card p{margin:0;font-size:11.5px!important;line-height:1.36}
+#mayaCreditsWidget .maya-product-summary{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#mayaCreditsWidget .maya-product-meta{display:flex;flex-wrap:wrap;gap:5px}
+#mayaCreditsWidget .maya-product-pill{padding:3px 6px;border:1px solid var(--maya-line-soft);border-radius:3px;color:var(--maya-gray);font-size:10px;line-height:1.2}
+#mayaCreditsWidget .maya-product-details{margin-top:2px;border-top:1px solid var(--maya-line-faint);padding-top:5px}
+#mayaCreditsWidget .maya-product-details summary{cursor:pointer;color:var(--maya-navy-mid);font-family:var(--maya-ui);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+#mayaCreditsWidget .maya-product-details p{margin-top:5px}
+#mayaCreditsWidget .maya-product-buy{margin-top:4px}
+#mayaCreditsWidget .maya-product-buy button{min-height:32px;padding:0 10px}
+#mayaCreditsWidget .maya-product-buy strong{font-size:13px}
+#mayaCreditsWidget .maya-product-buy small{font-size:10px}
+#mayaCreditsWidget .maya-report-head .maya-title{font-size:clamp(22px,3vw,30px);margin-bottom:8px}
+#mayaCreditsWidget .maya-cart-cta{position:sticky;bottom:0;z-index:2}
 #mayaCreditsWidget .maya-product-card h4,
 #mayaCreditsWidget .maya-remedy h4,
 #mayaCreditsWidget .maya-kundli-top h4{
@@ -759,6 +779,11 @@
 #mayaCreditsWidget .maya-kundli-card--reference{border:0;border-radius:0;background:transparent;box-shadow:none;padding:0;margin-bottom:16px}
 #mayaCreditsWidget .maya-kundli-svg{max-width:100%;filter:drop-shadow(0 12px 18px rgba(26,36,56,.08))}
 #mayaCreditsWidget .maya-accordion summary{font-family:var(--maya-ui);color:var(--maya-navy);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+@media(max-width:520px){
+  #mayaCreditsWidget .maya-product-card{grid-template-columns:84px minmax(0,1fr);min-height:118px}
+  #mayaCreditsWidget .maya-product-media,#mayaCreditsWidget .maya-product-media img{width:84px}
+  #mayaCreditsWidget .maya-product-body{padding:9px 10px}
+}
 #mayaCreditsWidget .maya-typing i{background:var(--maya-gold)}
 @media(max-width:480px){
   #mayaCreditsWidget .maya-panel{width:100vw;height:100svh;border-radius:0;box-shadow:none}
@@ -951,7 +976,7 @@
         var text = await response.text();
         var data = text ? JSON.parse(text) : {};
         if (response.ok && data.ok !== false) return data;
-        lastError = new Error(data.error || data.message || (data.ok === false && data.reply) || "Request failed");
+        lastError = new Error(data.error || data.message || (data.ok === false && data.reply) || "Service temporarily unavailable.");
       } catch (error) {
         lastError = error;
       }
@@ -963,7 +988,7 @@
     var response = await fetch(apiUrl(path), { method: "GET" });
     var text = await response.text();
     var data = text ? JSON.parse(text) : {};
-    if (!response.ok || data.ok === false) throw new Error(data.error || data.detail || "Request failed");
+    if (!response.ok || data.ok === false) throw new Error(data.error || data.detail || "Service temporarily unavailable.");
     return data;
   }
 
@@ -1415,7 +1440,7 @@
         '<input id="mayaGemInput" type="text" inputmode="numeric" value="' + escapeHtml(fieldValue) + '" placeholder="HH:MM or 07:30 PM">',
         '<button class="maya-icon-button" type="button" id="mayaTimeButton" aria-label="Open time picker">&#9719;</button>',
         '<input class="maya-hidden-picker" id="mayaNativeTime" type="time" tabindex="-1">',
-        '</div><div class="maya-field-hint">If unknown, Maya will not calculate Kundli. Bracelet report will use DOB + name numerology fallback.</div></div>'
+        '</div><div class="maya-field-hint">If unknown, Maya will not calculate Kundli. Bracelet report will use DOB birth number, life path, and Sun sign fallback.</div></div>'
       ].join("");
     }
     if (step.key === "birth_city") {
@@ -1441,7 +1466,7 @@
       '<div class="maya-step-anim">',
       '<div class="maya-kicker">Step ' + (state.gemStep + 1) + ' of ' + gemSteps.length + '</div>',
       '<div class="maya-title">' + escapeHtml(step.title) + '</div>',
-      '<p class="maya-copy">' + (step.key === "tob" ? "Exact time gives Dasha-based bracelet logic. Unknown time gives numerology bracelet logic from name and DOB." : "This helps Maya prepare a more personal bracelet recommendation.") + '</p>',
+      '<p class="maya-copy">' + (step.key === "tob" ? "Exact time gives Dasha-based bracelet logic. Unknown time gives DOB numerology plus Sun sign bracelet logic." : "This helps Maya prepare a more personal bracelet recommendation.") + '</p>',
       '<div class="maya-progress"><span style="width:' + percent + '%"></span></div>',
       fieldHtml,
       '<div class="maya-field-error" id="mayaFieldError"></div>',
@@ -1610,7 +1635,7 @@
       renderGemstone();
     } catch (error) {
       state.gemLoading = false;
-      renderGemstoneError(error && error.message ? error.message : "Request failed");
+      renderGemstoneError(error && error.message ? error.message : "Gemstone service temporarily unavailable.");
     }
   }
 
@@ -1638,31 +1663,49 @@
     var body = document.getElementById("mayaBody");
     var result = state.gemResult || {};
     var cards = result.recommendations || [];
+    if (!cards.length) {
+      renderGemstoneError(result.error || "Bracelet recommendation response empty hai. Please details check karke dobara try kijiye.");
+      return;
+    }
     var skus = result.recommended_skus || cards.map(function (card) { return card.sku || card.product_id; }).filter(Boolean);
     var checkoutUrl = braceletCheckoutUrl(skus, result.checkout_url);
     var shareText = encodeURIComponent("Maya Remedy Report for " + state.gemData.name + "\n" + cards.map(function (card, index) { return (index + 1) + ". " + card.name; }).join("\n"));
     var phone = String(state.gemData.whatsapp || "").replace(/\D/g, "");
+    var visibleCards = cards.slice(0, 2);
+    var isNumerology = result.mode === "numerology_fallback";
+    function cleanReason(value, fallback) {
+      var text = String(value || "").trim();
+      if (!text || /request failed/i.test(text)) return fallback || "";
+      return text;
+    }
     body.innerHTML = [
       '<div class="maya-report">',
-      '<div><div class="maya-kicker">Maya Remedy Report</div><div class="maya-title">' + escapeHtml(state.gemData.name) + ', your bracelet path is ready.</div><p class="maya-copy">' + escapeHtml(result.message) + '</p></div>',
-      '<div class="maya-product-grid">' + cards.slice(0, 3).map(function (card) {
+      '<div class="maya-report-head"><div class="maya-kicker">Maya Remedy Report</div><div class="maya-title">' + escapeHtml(state.gemData.name) + ', your bracelet path is ready.</div><p class="maya-copy">' + escapeHtml(result.message) + '</p></div>',
+      '<div class="maya-product-grid">' + visibleCards.map(function (card, index) {
         var sku = card.sku || card.product_id || "";
         var img = card.image_url || braceletImageUrl(sku);
         var imgBase = img.replace(/\.(webp|jpg|jpeg|png)(\?.*)?$/i, "");
+        var role = card.role || (index === 0 ? "Best Match" : "Support Bracelet");
+        var mainReason = cleanReason(card.why || card.planetary_reason, isNumerology ? "DOB numerology aur Sun sign support ke basis par selected." : "Chart timing support ke basis par selected.");
+        var detailReason = cleanReason(card.dasha_gochar_reason, isNumerology ? "Birth time unknown hai, isliye Kundli/Dasha/Gochar claim nahi kiya gaya. DOB-based numerology fallback use hua." : "Dasha aur Gochar support backend chart engine se read kiya gaya.");
+        var period = cleanReason(card.best_period, "Next 45 to 90 days daily sankalp ke saath practical support window hai.");
+        var detailLabel = isNumerology ? "Fallback Logic" : "Dasha/Gochar";
         return [
           '<article class="maya-product-card" data-card-sku="' + escapeHtml(sku) + '">',
           '  <div class="maya-product-media">',
           '    <img src="' + escapeHtml(img) + '" data-img-base="' + escapeHtml(imgBase) + '" data-img-ext-index="0" alt="' + escapeHtml(card.name) + '" loading="lazy" decoding="async" onerror="window.mayaBraceletImageFallback(this);">',
-          '    <span class="maya-product-badge">' + escapeHtml(String(card.discount || "")) + '% OFF</span>',
+          card.discount ? '    <span class="maya-product-badge">' + escapeHtml(String(card.discount)) + '% OFF</span>' : '',
           '  </div>',
           '  <div class="maya-product-body">',
-          '    <div class="maya-product-sku">' + escapeHtml(sku) + ' - Free size</div>',
+          '    <span class="maya-product-role">' + escapeHtml(role) + '</span>',
+          '    <div class="maya-product-sku">' + escapeHtml(sku || "Veshannastro") + ' - Free size</div>',
           '    <h4>' + escapeHtml(card.name) + '</h4>',
-          '    <p>' + escapeHtml(card.why || card.planetary_reason) + '</p>',
-          card.gemstones ? '<p><strong>Gemstones:</strong> ' + escapeHtml(card.gemstones) + '</p>' : '',
-          card.benefits ? '<p><strong>Purpose:</strong> ' + escapeHtml(card.benefits) + '</p>' : '',
-          '    <p><strong>Dasha/Gochar:</strong> ' + escapeHtml(card.dasha_gochar_reason) + '</p>',
-          '    <p><strong>Best period:</strong> ' + escapeHtml(card.best_period) + '</p>',
+          '    <p class="maya-product-summary">' + escapeHtml(mainReason) + '</p>',
+          '    <div class="maya-product-meta">' +
+            (card.gemstones ? '<span class="maya-product-pill">' + escapeHtml(card.gemstones) + '</span>' : '') +
+            (card.benefits ? '<span class="maya-product-pill">' + escapeHtml(card.benefits) + '</span>' : '') +
+          '</div>',
+          '    <details class="maya-product-details"><summary>Read details</summary><p><strong>' + escapeHtml(detailLabel) + ':</strong> ' + escapeHtml(detailReason) + '</p><p><strong>Best period:</strong> ' + escapeHtml(period) + '</p>' + (card.wearing_instruction ? '<p><strong>Wearing:</strong> ' + escapeHtml(card.wearing_instruction) + '</p>' : '') + '</details>',
           '    <div class="maya-product-buy"><span><strong>' + escapeHtml(card.price || money(card.price_value)) + '</strong>' + (card.mrp ? '<small><s>' + money(card.mrp) + '</s></small>' : '') + '</span><button type="button" data-maya-checkout="' + escapeHtml(sku) + '">Add</button></div>',
           '  </div>',
           '</article>'
