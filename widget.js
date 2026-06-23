@@ -1,23 +1,34 @@
 (function () {
   "use strict";
 
-  if (window.__VESHANN_MAYA_CREDITS_WIDGET__) return;
-  window.__VESHANN_MAYA_CREDITS_WIDGET__ = true;
+  var WIDGET_VERSION = "maaya-oracle-2026-06-23-v2";
+  if (window.__VESHANN_MAYA_CREDITS_WIDGET__ === WIDGET_VERSION) return;
+  if (window.__VESHANN_MAYA_CREDITS_WIDGET__) {
+    try {
+      var oldRoot = document.getElementById("mayaCreditsWidget");
+      if (oldRoot && oldRoot.parentNode) oldRoot.parentNode.removeChild(oldRoot);
+      var oldStyle = document.getElementById("maya-credits-widget-style");
+      if (oldStyle && oldStyle.parentNode) oldStyle.parentNode.removeChild(oldStyle);
+    } catch (e) {}
+  }
+  window.__VESHANN_MAYA_CREDITS_WIDGET__ = WIDGET_VERSION;
 
-  // widget.js is loaded cross-origin onto veshannastro.co.in from the Render
-  // backend (veshannastro-aibot.onrender.com). Every fetch() call below used a
-  // bare relative path like "/message" or "/api/gemstone/recommend" -- relative
-  // paths in fetch() always resolve against the PAGE's origin, never the
-  // script's own origin. So every single call was silently hitting
-  // https://veshannastro.co.in/message (which doesn't exist on the static
-  // frontend host) instead of the backend, and falling straight into the
-  // catch block. This constant fixes that for every endpoint in this file.
+  // Keep API calls pinned to the FastAPI backend. If this widget is copied onto
+  // veshannastro.co.in, document.currentScript points at the static website and
+  // relative API calls fail. Use the script origin only for Render/local builds.
+  var DEFAULT_API_BASE = "https://new-ai-chatbot-bv0n.onrender.com";
   var API_BASE = (function () {
     try {
+      if (window.VESHANN_MAYA_API_BASE) return String(window.VESHANN_MAYA_API_BASE).replace(/\/+$/, "");
       var current = document.currentScript && document.currentScript.src;
-      if (current) return new URL(current).origin;
+      var configured = document.currentScript && document.currentScript.getAttribute("data-api-base");
+      if (configured) return String(configured).replace(/\/+$/, "");
+      if (current) {
+        var origin = new URL(current).origin;
+        if (/onrender\.com$/i.test(new URL(origin).hostname) || /localhost|127\.0\.0\.1/i.test(origin)) return origin;
+      }
     } catch (e) {}
-    return "https://veshannastro-aibot.onrender.com";
+    return DEFAULT_API_BASE;
   })();
 
   function apiUrl(path) {
@@ -78,18 +89,6 @@
   ];
 
   var SHOP_URL = "https://veshannastro.co.in/";
-  var fallbackMap = {
-    1: ["VA-BR-CT-005", "Citrine Bracelet", "Sun support for confidence, vitality, and personal authority.", 999, 699, 30, "Citrine"],
-    2: ["VA-BR-MN-012", "Moonstone Bracelet", "Moon support for emotional calm and inner balance.", 1099, 749, 32, "White / Rainbow Moonstone"],
-    3: ["VA-BR-YA-006", "Yellow Aventurine Bracelet", "Jupiter support for growth, wisdom, and expansion.", 799, 499, 38, "Yellow Aventurine"],
-    4: ["VA-BR-TP-001", "Triple Protection Bracelet", "Rahu-style protection for clarity, grounding, and aura cleansing.", 999, 699, 30, "Tiger Eye + Black Obsidian + Hematite"],
-    5: ["VA-BR-LL-011", "Lapis Lazuli Bracelet", "Mercury support for communication and practical clarity.", 999, 699, 30, "Lapis Lazuli"],
-    6: ["VA-BR-RQ-009", "Rose Quartz Bracelet", "Venus support for love, harmony, and heart healing.", 799, 549, 31, "Rose Quartz"],
-    7: ["VA-BR-AM-002", "Amethyst Bracelet", "Ketu-style support for spiritual clarity and grounding.", 899, 599, 33, "Amethyst"],
-    8: ["VA-BR-BT-004", "Black Tourmaline Bracelet", "Saturn support for discipline, grounding, and pressure protection.", 899, 649, 28, "Black Tourmaline"],
-    9: ["VA-BR-RJ-007", "Red Jasper Bracelet", "Mars support for courage, stamina, and controlled action.", 799, 499, 38, "Red Jasper"]
-  };
-
   function braceletImageUrl(sku) {
     return "https://veshannastro.co.in/images/bracelets/" + encodeURIComponent(sku) + ".webp";
   }
@@ -1310,48 +1309,30 @@
     }
   }
 
-  function digitalRoot(value) {
-    var digits = String(value || "").replace(/\D/g, "").split("");
-    var total = digits.reduce(function (sum, d) { return sum + Number(d || 0); }, 0);
-    while (total > 9) total = String(total).split("").reduce(function (sum, d) { return sum + Number(d || 0); }, 0);
-    return total || 4;
-  }
-
-  function fallbackGemstoneResult(reason) {
-    var primary = fallbackMap[digitalRoot(state.gemData.dob)] || fallbackMap[4];
-    var secondary = fallbackMap[8];
-    var start = new Date();
-    var end = new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
-    var period = start.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + " to " + end.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    function card(item) {
-      return {
-        sku: item[0],
-        product_id: item[0],
-        name: item[1],
-        why: item[2],
-        gemstones: item[6],
-        mrp: item[3],
-        price_value: item[4],
-        discount: item[5],
-        image_url: braceletImageUrl(item[0]),
-        dasha_gochar_reason: reason || "Exact chart service was unavailable, so Maya used safe DOB fallback.",
-        best_period: period,
-        wearing_instruction: "Wear on your receptive wrist after a short morning prayer or sankalp.",
-        price: money(item[4]),
-        product_url: braceletCheckoutUrl([item[0]]),
-        discount_note: "15% AI recommendation discount auto-applies in cart."
-      };
-    }
-    return {
-      message: "Maya prepared a safe DOB-based remedy report from the available bracelet catalog.",
-      recommendations: [card(primary), card(secondary)],
-      recommended_skus: [primary[0], secondary[0]],
-      checkout_url: braceletCheckoutUrl([primary[0], secondary[0]]),
-      discount_note: "15% AI recommendation discount cart mein automatically apply hoga.",
-      final_remedy: "Final remedy: Roz subah 2 minute shant baithkar apne Isht Dev ka naam 11 baar lein, phir bracelet ko sankalp ke saath pehnen.",
-      final_prediction: "Final conclusion: " + primary[1] + " is the strongest safe match from DOB fallback. Wear it consistently for 45-90 days with one clear sankalp for steadier energy and decision clarity.",
-      disclaimer: "Gemstone bracelets are spiritual/remedial support and are not a guaranteed replacement for medical, financial, legal, or professional advice."
-    };
+  function renderGemstoneError(message) {
+    var body = document.getElementById("mayaBody");
+    var safeMessage = message || "Backend connection failed.";
+    body.innerHTML = [
+      '<div class="maya-step-anim">',
+      '<div class="maya-kicker">Connection issue</div>',
+      '<div class="maya-title">Bracelet report calculate nahi ho paaya.</div>',
+      '<p class="maya-copy">Timed bracelet recommendation backend Kundli engine se hi banegi. Is baar API response nahi mila, isliye Maaya fake Dasha/Gochar report nahi dikhayegi.</p>',
+      '<div class="maya-field-error is-visible">' + escapeHtml(safeMessage) + '</div>',
+      '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">',
+      '<button class="maya-primary" type="button" id="gemRetry">Try again</button>',
+      '<button class="maya-secondary" type="button" id="gemEditDetails">Check details</button>',
+      '</div>',
+      '</div>'
+    ].join("");
+    var retry = document.getElementById("gemRetry");
+    if (retry) retry.addEventListener("click", submitGemstone);
+    var edit = document.getElementById("gemEditDetails");
+    if (edit) edit.addEventListener("click", function () {
+      state.gemResult = null;
+      state.gemLoading = false;
+      state.gemStep = state.gemData.time_unknown ? 2 : 3;
+      renderGemstone();
+    });
   }
 
   function renderGemstone() {
@@ -1625,11 +1606,12 @@
         timezone: state.gemData.time_unknown ? null : (state.gemData.birth_tz || null),
         goal: state.gemData.goal || null
       });
+      state.gemLoading = false;
+      renderGemstone();
     } catch (error) {
-      state.gemResult = fallbackGemstoneResult(error.message);
+      state.gemLoading = false;
+      renderGemstoneError(error && error.message ? error.message : "Request failed");
     }
-    state.gemLoading = false;
-    renderGemstone();
   }
 
   function startMayaCartHandoff(button, skus, url) {
