@@ -17,6 +17,9 @@ import uuid
 from typing import Optional
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -25,8 +28,6 @@ from pydantic import BaseModel
 import ai
 import astrology
 import database as db
-
-load_dotenv()
 
 ASTRO_ENGINE_VERSION = getattr(astrology, "ENGINE_VERSION", "unknown")
 FREE_LIMIT = int(os.getenv("FREE_CREDITS", "300"))
@@ -868,7 +869,47 @@ def message(req: MessageReq):
     if not reserved.get("allowed"):
         return _locked_credit_reply(req.session_id)
 
-    reading = ai.generate_reading(row["chart_summary"], text, db.get_history(req.session_id))
+    try:
+        reading = ai.generate_reading(
+            row["chart_summary"],
+            text,
+            db.get_history(req.session_id),
+        )
+    except ai.AIConfigurationError as exc:
+        print(f"[maya-ai] configuration error: {exc}")
+        db.cancel_response_credit(response_id)
+        credit_status = db.credit_status(req.session_id, FREE_LIMIT)
+        return _reply(
+            "Maya ka AI connection abhi setup issue ki wajah se answer nahi de pa raha. Aapke credits deduct nahi hue. Please thodi der baad try karein.",
+            stage="ready",
+            locked=False,
+            response_id=response_id,
+            ai_error="configuration",
+            credits=credit_status["credits"],
+            free_remaining=credit_status["credits"],
+            credits_before=credit_status["credits"],
+            credits_deducted=0,
+            credits_after=credit_status["credits"],
+            credit_status=credit_status,
+        )
+    except ai.AIServiceUnavailable as exc:
+        print(f"[maya-ai] service unavailable: {exc}")
+        db.cancel_response_credit(response_id)
+        credit_status = db.credit_status(req.session_id, FREE_LIMIT)
+        return _reply(
+            "Maya ka AI service abhi heavy load mein hai. Aapke credits deduct nahi hue. 10-20 seconds baad dobara try kijiye.",
+            stage="ready",
+            locked=False,
+            response_id=response_id,
+            ai_error="temporary",
+            credits=credit_status["credits"],
+            free_remaining=credit_status["credits"],
+            credits_before=credit_status["credits"],
+            credits_deducted=0,
+            credits_after=credit_status["credits"],
+            credit_status=credit_status,
+        )
+
     db.complete_response(response_id, reading)
     db.append_history(req.session_id, "user", text)
     db.append_history(req.session_id, "assistant", reading)

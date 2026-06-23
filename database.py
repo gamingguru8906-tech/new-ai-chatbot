@@ -23,6 +23,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     create_engine,
+    delete,
     insert,
     select,
     text,
@@ -470,6 +471,85 @@ def complete_response(response_id, assistant_reply):
                 completed_at=dt.datetime.utcnow(),
             )
         )
+
+
+def cancel_response_credit(response_id):
+    """Undo a pending credit reservation when no AI answer was produced."""
+    with _engine.begin() as c:
+        existing = c.execute(
+            select(assistant_responses).where(
+                assistant_responses.c.response_id == response_id
+            )
+        ).mappings().first()
+        if not existing:
+            return {"cancelled": False, "reason": "missing_response"}
+        existing = dict(existing)
+        if existing.get("status") != "pending":
+            return {"cancelled": False, "reason": "not_pending"}
+
+        cycle = c.execute(
+            select(credit_cycles).where(
+                credit_cycles.c.cycle_id == existing.get("cycle_id")
+            )
+        ).mappings().first()
+        if not cycle:
+            c.execute(
+                delete(credit_ledger).where(
+                    credit_ledger.c.response_id == response_id
+                )
+            )
+            c.execute(
+                delete(assistant_responses).where(
+                    assistant_responses.c.response_id == response_id
+                )
+            )
+            return {"cancelled": True, "reason": "cycle_missing"}
+
+        cycle = dict(cycle)
+        deducted = max(0, int(existing.get("credits_deducted") or 0))
+        current = max(0, int(cycle.get("credits_remaining") or 0))
+        starting = max(0, int(cycle.get("starting_credits") or DEFAULT_CREDITS))
+        restored = min(starting, current + deducted)
+        restored_index = max(0, int(cycle.get("deduction_index") or 0) - 1)
+        restored_status = "active" if restored > 0 else "depleted"
+
+        c.execute(
+            sa_update(credit_cycles)
+            .where(credit_cycles.c.cycle_id == cycle["cycle_id"])
+            .values(
+                credits_remaining=restored,
+                deduction_index=restored_index,
+                status=restored_status,
+            )
+        )
+        c.execute(
+            delete(credit_ledger).where(credit_ledger.c.response_id == response_id)
+        )
+        c.execute(
+            delete(assistant_responses).where(
+                assistant_responses.c.response_id == response_id
+            )
+        )
+
+        if cycle.get("kind") == "free":
+            c.execute(
+                sa_update(sessions)
+                .where(sessions.c.session_id == existing["session_id"])
+                .values(free_used=max(0, starting - restored))
+            )
+        else:
+            c.execute(
+                sa_update(sessions)
+                .where(sessions.c.session_id == existing["session_id"])
+                .values(paid_credits=restored)
+            )
+
+        return {
+            "cancelled": True,
+            "credits": restored,
+            "credits_refunded": deducted,
+            "cycle_id": cycle["cycle_id"],
+        }
 
 
 def create_paid_credit_cycle(

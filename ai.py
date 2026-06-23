@@ -21,6 +21,18 @@ BOOKING_URL = os.getenv("BOOKING_URL", "https://veshannastro.co.in")
 
 _client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
+
+class AIServiceError(Exception):
+    """Base class for Gemini generation failures."""
+
+
+class AIConfigurationError(AIServiceError):
+    """Raised when the API key/model setup is not usable."""
+
+
+class AIServiceUnavailable(AIServiceError):
+    """Raised when Gemini is temporarily unavailable or quota-limited."""
+
 SYSTEM_PROMPT = f"""You are 'Maya', the warm and insightful Vedic astrologer of \
 Veshannastro (veshannastro.co.in). You speak like a kind, confident Indian \
 astrologer — respectful, a little spiritual, never robotic.
@@ -346,28 +358,86 @@ def _try_model(model_name, contents):
     )
 
 
+def _model_sequence():
+    seen = set()
+    for model_name in (GEMINI_MODEL, GEMINI_FALLBACK_MODEL):
+        model_name = (model_name or "").strip()
+        if model_name and model_name not in seen:
+            seen.add(model_name)
+            yield model_name
+
+
+def _is_retryable_ai_error(message):
+    markers = (
+        "503",
+        "500",
+        "429",
+        "overloaded",
+        "unavailable",
+        "deadline",
+        "resource exhausted",
+        "rate limit",
+        "quota",
+        "temporarily",
+        "timeout",
+    )
+    return any(marker in message for marker in markers)
+
+
+def _is_auth_error(message):
+    markers = (
+        "api key",
+        "permission_denied",
+        "unauthenticated",
+        "401",
+        "403",
+        "forbidden",
+    )
+    return any(marker in message for marker in markers)
+
+
+def _is_model_error(message):
+    markers = (
+        "not found",
+        "404",
+        "model",
+        "unsupported",
+        "invalid argument",
+    )
+    return any(marker in message for marker in markers)
+
+
 def generate_reading(chart_summary, user_question, history=None):
     if _client is None:
-        return ("🌙 The astrologer isn't configured yet (missing GEMINI_API_KEY). "
-                f"Please book directly at {BOOKING_URL}.")
+        raise AIConfigurationError("GEMINI_API_KEY is missing.")
 
     contents = _build_contents(chart_summary, user_question, history)
-    models_to_try = [GEMINI_MODEL, GEMINI_FALLBACK_MODEL]
+    last_error = None
+    model_error = None
 
-    for model_name in models_to_try:
+    for model_name in _model_sequence():
         for attempt in range(3):
             try:
                 resp = _try_model(model_name, contents)
                 text = (resp.text or "").strip()
                 if text:
                     return text
+                last_error = AIServiceUnavailable(
+                    f"{model_name} returned an empty response."
+                )
+                break
             except Exception as e:
+                last_error = e
                 msg = str(e).lower()
-                if any(k in msg for k in ("503", "overloaded", "unavailable",
-                                          "429", "deadline", "500")):
+                if _is_retryable_ai_error(msg):
                     time.sleep(1.5 * (attempt + 1))
                     continue
+                if _is_auth_error(msg):
+                    raise AIConfigurationError(str(e)) from e
+                if _is_model_error(msg):
+                    model_error = e
                 break
-    return ("🌙 The stars are very busy right now (the AI service is briefly "
-            "overloaded). Please ask again in a few seconds — or book a full "
-            f"reading at {BOOKING_URL}.")
+
+    if model_error is not None:
+        raise AIConfigurationError(str(model_error)) from model_error
+    raise AIServiceUnavailable(str(last_error or "Gemini did not return a response."))
