@@ -118,7 +118,7 @@ class SetupReq(BaseModel):
     session_id: str
     name: str
     dob: str
-    tob: str = "12:00"
+    tob: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     timezone: Optional[str] = None
@@ -130,8 +130,8 @@ class GemstoneReq(BaseModel):
     name: str
     whatsapp: Optional[str] = None
     dob: str
-    tob: str = "12:00"
-    birth_city: str
+    tob: Optional[str] = None
+    birth_city: str = ""
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     timezone: Optional[str] = None
@@ -200,8 +200,30 @@ GOAL_PLANETS = {
     "career_wealth": ["Saturn", "Mercury", "Jupiter"],
     "love_relationships": ["Venus", "Moon", "Jupiter"],
     "protection_grounding": ["Rahu", "Saturn", "Ketu"],
+    "protection_clarity": ["Rahu", "Saturn", "Ketu"],
     "health_energy": ["Sun", "Moon", "Mars"],
     "spiritual_growth": ["Ketu", "Jupiter", "Moon"],
+}
+
+NUMEROLOGY_BRACELETS = {
+    1: {"sku": "VA-BR-CT-005", "planet": "Sun", "focus": "confidence, leadership aur self-belief"},
+    2: {"sku": "VA-BR-MN-012", "planet": "Moon", "focus": "emotional balance, intuition aur calm response"},
+    3: {"sku": "VA-BR-YA-006", "planet": "Jupiter", "focus": "growth, wisdom aur opportunity mindset"},
+    4: {"sku": "VA-BR-TP-001", "planet": "Rahu", "focus": "protection, grounding aur scattered energy ko control"},
+    5: {"sku": "VA-BR-LL-011", "planet": "Mercury", "focus": "communication, clarity aur smart decision-making"},
+    6: {"sku": "VA-BR-RQ-009", "planet": "Venus", "focus": "love, harmony aur heart healing"},
+    7: {"sku": "VA-BR-AM-002", "planet": "Ketu", "focus": "intuition, spiritual clarity aur mental quiet"},
+    8: {"sku": "VA-BR-BT-004", "planet": "Saturn", "focus": "discipline, protection aur pressure handling"},
+    9: {"sku": "VA-BR-RJ-007", "planet": "Mars", "focus": "courage, stamina aur decisive action"},
+}
+
+GOAL_NUMBERS = {
+    "career_wealth": [8, 5, 3],
+    "love_relationships": [6, 2, 3],
+    "protection_grounding": [4, 8, 7],
+    "protection_clarity": [4, 8, 7],
+    "health_energy": [9, 1, 2],
+    "spiritual_growth": [7, 3, 2],
 }
 
 
@@ -228,6 +250,121 @@ def _birth_chart_from_gemstone_req(req: GemstoneReq):
             tz = TimezoneFinder().timezone_at(lat=req.latitude, lng=req.longitude) or "UTC"
         return astrology.calculate_chart_from_coords(req.dob, req.tob, req.latitude, req.longitude, tz, place)
     return astrology.calculate_chart(req.dob, req.tob, place)
+
+
+def _has_exact_birth_time(value: Optional[str]) -> bool:
+    raw = str(value or "").strip().lower()
+    if not raw or raw in {"unknown", "not sure", "dont know", "don't know", "na", "n/a"}:
+        return False
+    try:
+        astrology._normalize_time(raw)
+        return True
+    except Exception:
+        return False
+
+
+def _reduce_number(value: int, keep_master: bool = False) -> int:
+    while value > 9 and not (keep_master and value in (11, 22, 33)):
+        value = sum(int(ch) for ch in str(value))
+    return value
+
+
+def _life_path_number(dob: str) -> int:
+    year, month, day = astrology._normalize_date(dob)
+    return _reduce_number(sum(int(ch) for ch in f"{year:04d}{month:02d}{day:02d}"))
+
+
+def _name_number(name: str) -> int:
+    total = 0
+    for ch in name.upper():
+        if "A" <= ch <= "Z":
+            total += ((ord(ch) - ord("A")) % 9) + 1
+    return _reduce_number(total or 1)
+
+
+def _numerology_card(num: int, role: str, reason: str):
+    item = NUMEROLOGY_BRACELETS.get(num) or NUMEROLOGY_BRACELETS[4]
+    sku = item["sku"]
+    product = BRACELET_CATALOG[sku]
+    return {
+        "sku": sku,
+        "product_id": sku,
+        "name": product["name"],
+        "gemstones": product["gemstones"],
+        "description": product["description"],
+        "benefits": product["benefits"],
+        "tags": product["tags"],
+        "stock": product["stock"],
+        "why": f"{role} number {num} {item['planet']} vibration se linked hai; isliye yeh bracelet {item['focus']} ke liye best match hai.",
+        "planetary_reason": f"Time unknown tha, isliye Kundli/Dasha calculate nahi ki gayi. DOB+name numerology fallback use hua.",
+        "dasha_gochar_reason": reason,
+        "best_period": "Next 45 to 90 days isko daily sankalp ke saath wear karna most practical support window hai.",
+        "wearing_instruction": "Subah pehli baar pehnein, 11 deep breaths ke saath clear sankalp rakhein. Spiritual support hai, guaranteed result nahi.",
+        "mrp": product["mrp"],
+        "price_value": product["price"],
+        "discount": product["discount"],
+        "price": f"Rs. {product['price']}",
+        "image_url": _bracelet_image_url(sku),
+        "product_url": _bracelet_checkout_url([sku]),
+        "discount_note": "15% AI recommendation discount auto-applies in cart.",
+    }
+
+
+def _build_numerology_bracelet_recommendations(req: GemstoneReq):
+    life = _life_path_number(req.dob)
+    name_num = _name_number(req.name)
+    ordered_numbers = [life, name_num]
+    ordered_numbers += GOAL_NUMBERS.get(req.goal or "", [])
+    selected = []
+    selected_skus = set()
+    for num in ordered_numbers:
+        item = NUMEROLOGY_BRACELETS.get(num)
+        if not item:
+            continue
+        if item["sku"] not in selected_skus:
+            selected.append(num)
+            selected_skus.add(item["sku"])
+        if len(selected) == 3:
+            break
+    if not selected:
+        selected = [4]
+
+    roles = ["Life Path", "Name/Destiny", "Goal Support"]
+    cards = []
+    for idx, num in enumerate(selected):
+        role = roles[idx] if idx < len(roles) else "Support"
+        reason = (
+            f"{role}: number {num}. Birth time unknown hai, isliye exact Lagna, Dasha, Gochar aur Kundli promise "
+            "claim nahi kiya gaya. Yeh recommendation DOB aur name vibration se nikali gayi hai."
+        )
+        cards.append(_numerology_card(num, role, reason))
+
+    recommended_skus = [card["sku"] for card in cards]
+    primary = cards[0]
+    return {
+        "ok": True,
+        "mode": "numerology_fallback",
+        "message": (
+            f"Birth time missing hai, isliye Maya ne Kundli/Dasha calculate nahi ki. "
+            f"DOB se Life Path {life} aur name se Name Number {name_num} aaya. "
+            f"Final conclusion: {primary['name']} aapka strongest first bracelet hai."
+        ),
+        "numerology": {
+            "life_path": life,
+            "name_number": name_num,
+            "method": "Pythagorean 1-9 reduction from DOB digits and full name letters.",
+        },
+        "recommendations": cards,
+        "recommended_skus": recommended_skus,
+        "checkout_url": _bracelet_checkout_url(recommended_skus),
+        "discount_note": "15% AI recommendation discount cart mein automatically apply hoga.",
+        "final_remedy": "One Remedy: Roz subah bracelet pehne se pehle 11 baar apna naam dheere se bolkar ek clear sankalp rakhein: 'Main apni energy ko stable aur positive direction mein use kar raha/rahi hoon.'",
+        "final_prediction": (
+            f"Final conclusion: {primary['name']} sabse suitable hai. Isse next 45-90 days mein "
+            "clarity, emotional steadiness aur decision energy ko support milega, especially jab aap daily sankalp ke saath use karenge."
+        ),
+        "disclaimer": "Birth time unknown hone par yeh Kundli/Dasha reading nahi hai; yeh DOB+name numerology based spiritual bracelet guidance hai.",
+    }
 
 
 def _planet_chart_context(chart, planet_name: str) -> str:
@@ -327,12 +464,14 @@ def _build_bracelet_recommendations(chart, goal: Optional[str]):
     cards = [_bracelet_card(planet, roles[i], chart, details, transit_notes) for i, planet in enumerate(selected)]
     recommended_skus = [card["sku"] for card in cards]
     remedy_planet = details["antar"] if details["antar"] in PLANET_REMEDIES else details["maha"]
+    primary = cards[0] if cards else {}
     return {
         "message": (
             f"Current timing {details['maha']} Mahadasha / {details['antar']} Antardasha / "
             f"{details['pratyantar']} Pratyantardasha activate kar raha hai. "
-            "Bracelet suggestions Dasha, Gochar aur chart placement ko combine karke diye gaye hain."
+            f"Final conclusion: {primary.get('name', 'recommended bracelet')} sabse strong first choice hai."
         ),
+        "mode": "timed_kundli",
         "current_dasha": {
             "mahadasha": details["maha"],
             "antardasha": details["antar"],
@@ -347,6 +486,11 @@ def _build_bracelet_recommendations(chart, goal: Optional[str]):
         "checkout_url": _bracelet_checkout_url(recommended_skus),
         "discount_note": "15% AI recommendation discount cart mein automatically apply hoga.",
         "final_remedy": PLANET_REMEDIES.get(remedy_planet, PLANET_REMEDIES["Saturn"]),
+        "final_prediction": (
+            f"Final conclusion: {primary.get('name', 'selected bracelet')} is chart ke hisaab se strongest match hai. "
+            f"{details['maha']}/{details['antar']} activation ke dauraan yeh bracelet discipline, protection aur clarity ko support karega; "
+            "next 60-90 days mein is support ko sabse clearly feel karne ka window hai."
+        ),
         "disclaimer": "Gemstone bracelets aur remedies spiritual support hain; medical, legal, financial ya guaranteed result ka replacement nahi.",
     }
 
@@ -584,6 +728,11 @@ def start(req: StartReq):
 def setup(req: SetupReq):
     if not req.name.strip() or not req.dob.strip() or not req.place.strip():
         return _reply("Name, date of birth, birth time, aur birth city check karke dobara try kijiye.", ok=False)
+    if not _has_exact_birth_time(req.tob):
+        return _reply(
+            "Accurate Kundli ke liye exact birth time required hai. Time unknown ho toh AI Astrologer Kundli calculate nahi karega; bracelet tool numerology fallback use kar sakta hai.",
+            ok=False,
+        )
 
     try:
         if req.latitude is not None and req.longitude is not None:
@@ -646,9 +795,15 @@ def setup(req: SetupReq):
 
 @app.post("/api/gemstone/recommend")
 def gemstone_recommend(req: GemstoneReq):
-    if not req.name.strip() or not req.dob.strip() or not req.birth_city.strip():
-        return {"ok": False, "error": "Name, date of birth, time aur birth place required hai."}
+    if not req.name.strip() or not req.dob.strip():
+        return {"ok": False, "error": "Name aur date of birth required hai."}
     try:
+        if not _has_exact_birth_time(req.tob):
+            result = _build_numerology_bracelet_recommendations(req)
+            result["name"] = req.name.strip()
+            return result
+        if not req.birth_city.strip():
+            return {"ok": False, "error": "Exact birth time diya hai, isliye timed Kundli bracelet reading ke liye birth place bhi required hai."}
         chart = _birth_chart_from_gemstone_req(req)
         result = _build_bracelet_recommendations(chart, req.goal)
         result["ok"] = True
